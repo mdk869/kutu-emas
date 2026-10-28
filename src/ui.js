@@ -41,9 +41,9 @@ export function calendarHref(groupName, start, month) {
   const d2 = `${y}${String(m + 1).padStart(2, '0')}02`;
   const q = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `Giliran saya terima emas — ${groupName}`,
+    text: `Terima emas kutu — ${groupName}`,
     dates: `${d1}/${d2}`,
-    details: `Bulan ${month} kutu emas ${groupName}: giliran saya terima emas pada ${monthLabel(start, month)}.`,
+    details: `Giliran ke-${month} kutu emas ${groupName}. Saya terima emas pada ${monthLabel(start, month)}.`,
   });
   return `https://calendar.google.com/calendar/render?${q}`;
 }
@@ -131,10 +131,10 @@ export function resultsTable(results, start, highlightName) {
 
 export function resultsText(v) {
   return (
-    `*${v.group_name}*\nKeputusan cabutan giliran kutu emas\n\n` +
+    `*${v.group_name}*\nKeputusan cabutan giliran kutu emas 🎉\n\n` +
     v.results.map((r) => `${r.month}. ${r.name} — ${monthLabel(v.start_month, r.month)}${r.by_admin ? ' *' : ''}`).join('\n') +
-    (v.results.some((r) => r.by_admin) ? '\n\n* dicabut oleh admin bagi pihak peserta' : '') +
-    `\n\n✅ Kod Kunci: ${shortCode(v.commit_hash)}\nLihat & sahkan keputusan: ${resultsLink(v.public_id)}`
+    (v.results.some((r) => r.by_admin) ? '\n\n* dicabut oleh admin untuk ahli' : '') +
+    `\n\n✅ Kod Kunci: ${shortCode(v.commit_hash)}\nTengok keputusan: ${resultsLink(v.public_id)}`
   );
 }
 
@@ -142,13 +142,13 @@ export function resultsText(v) {
 export function lockBadge(v) {
   return `<div class="trust">
     <span class="trust-ic">${ICON.lock}</span>
-    <span><b>Kad sudah dikunci</b> pada ${esc(fmtDate(v.created_at))}. Tiada sesiapa, termasuk admin, boleh lihat atau tukar isi kad.
+    <span><b>Kad dah dikunci</b> pada ${esc(fmtDate(v.created_at))}. Tiada siapa boleh tengok atau tukar isi kad, termasuk admin.
     <span class="code-line">Kod Kunci: <b class="code">${shortCode(v.commit_hash)}</b></span></span>
   </div>`;
 }
 
 /** Bekas untuk semakan automatik selepas selesai; isi dengan runFairCheck(). */
-export const fairBox = () => `<div class="trust pending" id="fair"><span class="trust-ic">${ICON.lock}</span><span>Menyemak keadilan keputusan…</span></div>`;
+export const fairBox = () => `<div class="trust pending" id="fair"><span class="trust-ic">${ICON.lock}</span><span>Sedang semak keputusan…</span></div>`;
 
 export async function runFairCheck(root, v) {
   const box = root.querySelector('#fair');
@@ -158,21 +158,21 @@ export async function runFairCheck(root, v) {
     const ok = r.hash === v.commit_hash && v.results.every((x) => r.months[x.card - 1] === x.month);
     box.className = 'trust ' + (ok ? 'ok' : 'bad');
     box.innerHTML = ok
-      ? `<span class="trust-ic">${ICON.check}</span><span><b>Disahkan adil.</b> Keputusan ini sama seperti semasa kad dikunci pada ${esc(fmtDate(v.created_at))}. Kod Kunci <b class="code">${shortCode(v.commit_hash)}</b> sepadan.</span>`
-      : `<span class="trust-ic">!</span><span><b>Keputusan tidak sepadan dengan Kod Kunci.</b> Sila hubungi admin.</span>`;
+      ? `<span class="trust-ic">${ICON.check}</span><span><b>Adil &amp; tidak diubah.</b> Keputusan ini sama macam masa kad dikunci (${esc(fmtDate(v.created_at))}). Kod Kunci <b class="code">${shortCode(v.commit_hash)}</b> sepadan.</span>`
+      : `<span class="trust-ic">!</span><span><b>Keputusan tak sama dengan Kod Kunci.</b> Sila tanya admin.</span>`;
   } catch {
     box.className = 'trust';
-    box.innerHTML = `<span class="trust-ic">${ICON.lock}</span><span>Telefon ini tidak dapat menyemak secara automatik. Kod Kunci: <b class="code">${shortCode(v.commit_hash)}</b></span>`;
+    box.innerHTML = `<span class="trust-ic">${ICON.lock}</span><span>Telefon ini tak dapat semak secara automatik. Kod Kunci: <b class="code">${shortCode(v.commit_hash)}</b></span>`;
   }
 }
 
 /** Butiran teknikal yang disorok, untuk sesiapa yang mahu semak sendiri. */
 export function techDetails(v) {
-  return `<details class="tech"><summary>Butiran untuk semakan lanjutan</summary>
+  return `<details class="tech"><summary>Nak semak sendiri?</summary>
     <div class="tech-body">
-      <p>Sistem ini menyemak secara automatik. Bahagian ini hanya untuk sesiapa yang mahu mengesahkan sendiri di halaman <a href="#semak">Semakan lanjutan</a>.</p>
+      <p>Sistem dah semak secara automatik. Kalau nak semak sendiri, salin maklumat di bawah ke halaman <a href="#semak">Semak sendiri</a>.</p>
       <span class="lbl">Kod pengesahan penuh</span><div class="mono">${v.commit_hash}</div>
-      ${v.seed ? `<span class="lbl">Kod benih</span><div class="mono">${v.seed}</div>` : ''}
+      ${v.seed ? `<span class="lbl">Kod rawak asal</span><div class="mono">${v.seed}</div>` : ''}
     </div></details>`;
 }
 

@@ -5,21 +5,21 @@ export function renderVerify(app) {
   app.innerHTML = `
   <section class="panel">
     <div>
-      <h1>Semakan lanjutan</h1>
-      <p class="lead">Halaman keputusan sudah menyemak secara automatik. Halaman ini untuk sesiapa yang mahu mengesahkan sendiri menggunakan butiran dari bahagian "Butiran untuk semakan lanjutan".</p>
+      <h1>Semak sendiri</h1>
+      <p class="lead">Halaman keputusan dah semak secara automatik. Halaman ini untuk sesiapa yang nak semak sendiri, guna maklumat dari bahagian "Nak semak sendiri?".</p>
     </div>
     <form id="vf" class="stack" novalidate>
       <div class="field">
-        <label for="vSeed">Kod benih</label>
+        <label for="vSeed">Kod rawak asal</label>
         <input id="vSeed" class="mono" placeholder="64 aksara" autocomplete="off" spellcheck="false" autocapitalize="off">
       </div>
       <div class="field">
-        <label for="vNames">Nama peserta</label>
-        <span class="hint">Satu nama satu baris, ikut susunan asal semasa cabutan dibuat.</span>
+        <label for="vNames">Nama ahli</label>
+        <span class="hint">Satu nama satu baris, ikut susunan asal masa cabutan dibuat.</span>
         <textarea id="vNames" rows="8"></textarea>
       </div>
       <div class="field">
-        <label for="vHash">Kod Kunci yang diumumkan (pilihan)</label>
+        <label for="vHash">Kod Kunci yang admin umumkan (kalau ada)</label>
         <input id="vHash" placeholder="Contoh: EMAS-K7M2-Q9XT" autocomplete="off" spellcheck="false" autocapitalize="characters">
       </div>
       <button class="btn gold wide" type="submit">Semak</button>
@@ -28,11 +28,11 @@ export function renderVerify(app) {
   </section>
 
   <section class="panel quiet">
-    <h2>Kenapa cabutan ini adil</h2>
+    <h2>Kenapa cabutan ini adil?</h2>
     <ul class="how">
-      <li><b>Kad disusun secara rawak oleh sistem</b>, bukan oleh admin. Boleh digabungkan dengan nombor bertuah daripada peserta.</li>
-      <li><b>Dikunci sebelum bermula.</b> Kod Kunci ialah "cap jari" susunan kad itu. Kalau isi kad diubah walau sedikit, Kod Kunci akan jadi lain.</li>
-      <li><b>Tiada sesiapa boleh mengintai.</b> Isi kad disimpan di pelayan. Admin pun hanya nampak kad yang sudah dibuka.</li>
+      <li><b>Sistem yang susun kad secara rawak</b>, bukan admin. Boleh dicampur dengan nombor bertuah dari ahli.</li>
+      <li><b>Dikunci sebelum mula.</b> Kod Kunci ialah "cap jari" susunan kad. Kalau isi kad diubah sedikit pun, Kod Kunci akan berubah.</li>
+      <li><b>Tiada siapa boleh intai.</b> Isi kad disimpan dalam sistem. Admin pun hanya nampak kad yang dah dibuka.</li>
     </ul>
   </section>`;
 
@@ -49,8 +49,8 @@ export function renderVerify(app) {
       const match = expected && (expected === code || expected.toLowerCase() === r.hash);
       const verdict = expected
         ? match
-          ? '<p class="ok">✓ Sepadan dengan Kod Kunci yang diumumkan. Keputusan tidak diubah.</p>'
-          : '<p class="bad">Tidak sepadan. Semak ejaan dan susunan nama, serta kod benih.</p>'
+          ? '<p class="ok">✓ Sama dengan Kod Kunci yang diumumkan. Keputusan tidak diubah.</p>'
+          : '<p class="bad">Tak sama. Semak ejaan dan susunan nama, dan kod rawak asal.</p>'
         : '';
       out.innerHTML = `${verdict}
         <div><span class="lbl">Kod Kunci dikira</span><div class="code big-code">${code}</div></div>

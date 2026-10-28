@@ -32,7 +32,7 @@ export function initPwa() {
   const banner = document.createElement('div');
   banner.className = 'offline';
   banner.setAttribute('role', 'status');
-  banner.textContent = 'Tiada sambungan internet. Cabutan akan dikemas kini bila talian pulih.';
+  banner.textContent = 'Tiada internet. Halaman akan dikemas kini bila talian pulih.';
   banner.hidden = navigator.onLine;
   document.body.appendChild(banner);
   addEventListener('online', () => { banner.hidden = true; });
@@ -48,18 +48,18 @@ export function installCard(box) {
   const later = '<button class="btn small ghost" data-later type="button">Nanti</button>';
   let html = '';
   if (deferred) {
-    html = `<p><b>Pasang Kutu Emas di skrin utama</b><br><span class="hint">Buka papan admin terus seperti aplikasi, tanpa mencari pautan.</span></p>
-      <div class="row-btns"><button class="btn small gold" data-install type="button">Pasang aplikasi</button>${later}</div>`;
+    html = `<p><b>Letak Kutu Emas di skrin utama</b><br><span class="hint">Buka terus macam app, tak perlu cari link lagi.</span></p>
+      <div class="row-btns"><button class="btn small gold" data-install type="button">Tambah ke skrin utama</button>${later}</div>`;
   } else if (isIOS() && inAppBrowser()) {
-    html = `<p><b>Mahu pasang Kutu Emas di skrin utama?</b><br><span class="hint">Buka halaman ini dalam Safari dahulu. Salin pautan, kemudian tampal dalam Safari.</span></p>
-      <div class="row-btns"><button class="btn small" data-copylink type="button">Salin pautan</button>${later}</div>`;
+    html = `<p><b>Nak letak Kutu Emas di skrin utama?</b><br><span class="hint">Buka halaman ini dalam Safari dulu. Salin link, kemudian paste dalam Safari.</span></p>
+      <div class="row-btns"><button class="btn small" data-copylink type="button">Salin link</button>${later}</div>`;
   } else if (isIOS()) {
-    html = `<p><b>Pasang Kutu Emas di skrin utama</b></p>
+    html = `<p><b>Letak Kutu Emas di skrin utama</b></p>
       <ol class="ios-steps"><li>Tekan butang <b>Kongsi</b> <span class="share-ic" aria-hidden="true">⬆︎</span> di bawah skrin Safari</li><li>Pilih <b>Add to Home Screen</b> (Tambah ke Skrin Utama)</li><li>Tekan <b>Add</b></li></ol>
       <div class="row-btns">${later}</div>`;
   } else if (inAppBrowser()) {
-    html = `<p><b>Mahu pasang Kutu Emas di skrin utama?</b><br><span class="hint">Buka halaman ini dalam Chrome dahulu (menu ⋮ → "Buka dalam Chrome").</span></p>
-      <div class="row-btns"><button class="btn small" data-copylink type="button">Salin pautan</button>${later}</div>`;
+    html = `<p><b>Nak letak Kutu Emas di skrin utama?</b><br><span class="hint">Buka halaman ini dalam Chrome dulu (menu ⋮ → "Buka dalam Chrome").</span></p>
+      <div class="row-btns"><button class="btn small" data-copylink type="button">Salin link</button>${later}</div>`;
   }
   box.innerHTML = html ? `<div class="install">${html}</div>` : '';
 
@@ -74,5 +74,5 @@ export function installCard(box) {
     store.set(DISMISS_KEY, Date.now() + 14 * 24 * 3600 * 1000);
     box.innerHTML = '';
   });
-  box.querySelector('[data-copylink]')?.addEventListener('click', () => copy(location.origin + '/', 'Pautan disalin.'));
+  box.querySelector('[data-copylink]')?.addEventListener('click', () => copy(location.origin + '/', 'Link disalin.'));
 }
