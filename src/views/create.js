@@ -49,7 +49,6 @@ export function renderCreate(app) {
         </div>
       </details>
       <p id="err" class="err" role="alert"></p>
-      <button class="btn gold wide desk-only" id="goDesk" type="submit">Kunci &amp; mula cabutan</button>
     </form>
   </section>
 
@@ -78,7 +77,6 @@ export function renderCreate(app) {
     else if (names.some((n) => n.length > 60)) msg = 'Ada nama yang terlalu panjang.';
     $('#nameErr').textContent = msg;
     const label = names.length >= 2 ? `Kunci &amp; mula cabutan (${names.length} orang)` : 'Kunci &amp; mula cabutan';
-    $('#goDesk').innerHTML = label;
     bar.querySelector('#goMob').innerHTML = label;
     return { names, msg };
   }
@@ -92,7 +90,7 @@ export function renderCreate(app) {
     if (msg) { err.textContent = msg; $('#names').focus(); return; }
     if (!$('#start').value) { err.textContent = 'Pilih bulan pertama kutu.'; return; }
 
-    const btns = [$('#goDesk'), bar.querySelector('#goMob')];
+    const btns = [bar.querySelector('#goMob')];
     btns.forEach((b) => { b.disabled = true; b.textContent = 'Mengocok kad…'; });
     try {
       const group = normName($('#group').value) || 'Kutu Emas';

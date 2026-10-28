@@ -128,10 +128,8 @@ details.more[open] summary { margin-bottom: 10px; }
 .btn.wa:hover { background: #238a57; }
 .btn.icon { width: 40px; min-height: 40px; padding: 0; }
 .btn[data-armed], .menu-item[data-armed] { border-color: var(--warn); color: var(--warn); }
-.desk-only { display: none; }
-@media (min-width: 761px) { .desk-only { display: inline-flex; } .actionbar { display: none !important; } body.has-bar { --bar-h: 0px; } }
-
-/* Sticky action bar (mudah alih) */
+/* Bar tindakan melekat di bawah: dipaparkan pada SEMUA saiz skrin supaya tindakan utama
+   (cth. "Buka Kad") sentiasa ada. Di skrin lebar, isinya dihadkan selebar kandungan. */
 .actionbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
   padding: 12px max(14px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
@@ -139,8 +137,9 @@ details.more[open] summary { margin-bottom: 10px; }
   border-top: 1px solid var(--line); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   display: flex; flex-direction: column; gap: 6px;
 }
+.actionbar > * { width: 100%; max-width: 732px; margin-inline: auto; }
 .bar-row { display: flex; gap: 8px; }
-.bar-note, .bar-hint { margin: 0; text-align: center; font-size: 13px; color: var(--muted); }
+.bar-note, .bar-hint { margin: 0 auto; text-align: center; font-size: 13px; color: var(--muted); }
 .bar-hint { font-size: 15px; padding: 12px 0; }
 
 /* Trust badge */
