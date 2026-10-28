@@ -1,8 +1,9 @@
 import { api } from '../api.js';
-import { esc, fmtDate, store, setActionBar } from '../ui.js';
+import { auth } from '../auth.js';
+import { esc, store, setActionBar } from '../ui.js';
 import { normName } from '../fair.js';
-
-const SESSIONS_KEY = 'kutu-emas-sesi-saya';
+import { mountLogin } from './login.js';
+import { REUSE_KEY } from './home.js';
 
 function nextMonth() {
   const d = new Date();
@@ -11,28 +12,31 @@ function nextMonth() {
 }
 
 export function renderCreate(app) {
-  const mine = store.get(SESSIONS_KEY, []);
+  if (!auth.loggedIn) {
+    setActionBar('');
+    app.innerHTML = `<section class="panel" id="loginBox"></section>`;
+    return mountLogin(app.querySelector('#loginBox'), () => renderCreate(app), {
+      lead: 'Cabutan disimpan atas nama akaun anda, supaya anda boleh buka semula dari mana-mana telefon.',
+    });
+  }
+  const reuse = store.get(REUSE_KEY, null);
+  store.set(REUSE_KEY, null);
   app.innerHTML = `
-  ${mine.length ? `
-  <section class="panel">
-    <h2>Cabutan saya</h2>
-    <ul class="sessions">${mine.map((s) => `<li><a href="#a=${esc(s.token)}"><b>${esc(s.group)}</b><span>${s.n} peserta · ${esc(fmtDate(s.at))}</span><span class="chev" aria-hidden="true">›</span></a></li>`).join('')}</ul>
-  </section>` : ''}
-
+  <a class="back-link" href="#">‹ Cabutan saya</a>
   <section class="panel">
     <div>
       <h1>Cabutan baru</h1>
-      <p class="lead">Masukkan nama peserta. Setiap orang akan dapat pautan sendiri untuk cabut kad dari telefon.</p>
+      <p class="lead">${reuse ? 'Senarai nama disalin daripada cabutan lepas. Semak dan ubah jika perlu.' : 'Masukkan nama peserta. Selepas dikunci, anda kongsi satu pautan dalam group dan setiap orang cabut kad sendiri.'}</p>
     </div>
     <form id="f" class="stack" novalidate>
       <div class="field">
         <label for="group">Nama kumpulan</label>
-        <input id="group" maxlength="80" placeholder="Contoh: Kutu Emas Geng Pejabat" autocomplete="off">
+        <input id="group" maxlength="80" placeholder="Contoh: Kutu Emas Geng Pejabat" autocomplete="off" value="${esc(reuse?.group || '')}">
       </div>
       <div class="field">
         <label for="names">Nama peserta</label>
         <span class="hint">Satu nama satu baris. Boleh salin dan tampal terus dari WhatsApp.</span>
-        <textarea id="names" rows="8" placeholder="Siti Aminah&#10;Rosnah&#10;Farid"></textarea>
+        <textarea id="names" rows="8" placeholder="Siti Aminah&#10;Rosnah&#10;Farid">${esc((reuse?.names || []).join('\n'))}</textarea>
         <ol class="chips" id="chips" aria-label="Senarai peserta"></ol>
         <span id="nameErr" class="warn-text" role="alert"></span>
       </div>
@@ -56,7 +60,7 @@ export function renderCreate(app) {
     <h2>Bagaimana ia berfungsi</h2>
     <ol class="how-steps">
       <li><b>Anda kunci senarai.</b> Sistem susun kad emas secara rawak. Isinya dikunci dan tiada sesiapa boleh lihat.</li>
-      <li><b>Hantar pautan kepada peserta.</b> Setiap orang buka di telefon dan pilih satu kad.</li>
+      <li><b>Kongsi satu pautan dalam group.</b> Setiap orang buka di telefon, pilih nama sendiri dan pilih satu kad.</li>
       <li><b>Kongsi keputusan dalam group.</b> Bila semua selesai, senarai giliran keluar dan disahkan adil secara automatik.</li>
     </ol>
   </section>`;
@@ -94,9 +98,8 @@ export function renderCreate(app) {
     btns.forEach((b) => { b.disabled = true; b.textContent = 'Menyusun kad…'; });
     try {
       const group = normName($('#group').value) || 'Kutu Emas';
-      const { admin_token } = await api.createSession(group, `${$('#start').value}-01`, names, normName($('#luck').value));
-      store.set(SESSIONS_KEY, [{ token: admin_token, group, n: names.length, at: new Date().toISOString() }, ...mine].slice(0, 20));
-      location.hash = `a=${admin_token}`;
+      const { session_id } = await api.createSession(group, `${$('#start').value}-01`, names, normName($('#luck').value));
+      location.hash = `s=${session_id}`;
     } catch (ex) {
       err.textContent = ex.message;
       err.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -106,6 +109,7 @@ export function renderCreate(app) {
   }
   $('#f').addEventListener('submit', (e) => { e.preventDefault(); submit(); });
   bar.querySelector('#goMob').addEventListener('click', submit);
+  checkNames();
 
   return () => {};
 }

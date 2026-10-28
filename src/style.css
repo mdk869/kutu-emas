@@ -294,3 +294,29 @@ details.tech p { margin: 0 0 4px; font-size: 13px; color: var(--muted); }
 .linkish { background: none; border: 0; padding: 0; color: var(--gold-hi); text-decoration: underline; cursor: pointer; font-size: 14px; }
 .bar-row .bar-hint { padding: 0; align-self: center; }
 @media (prefers-reduced-motion: reduce) { .live-dot, .feed li.new { animation: none; } }
+
+/* Akaun admin & Cabutan saya */
+.back-link { color: var(--muted); text-decoration: none; font-size: 15px; padding: 4px 0; align-self: flex-start; }
+.back-link:hover { color: var(--gold-hi); }
+.acct { font-size: 14px; overflow-wrap: anywhere; }
+.status.sm { font-size: 12px; padding: 3px 9px; }
+.tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(0, 0, 0, 0.25); }
+.tab { flex: 1; min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-weight: 600; cursor: pointer; }
+.tab.on { background: var(--velvet-3); color: var(--gold-hi); box-shadow: inset 0 0 0 1px var(--line); }
+.sess-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sess { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 8px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(0, 0, 0, 0.15); }
+.sess-main { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--ink); min-width: 0; }
+.sess-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sess-top b { overflow-wrap: anywhere; font-size: 16px; }
+.sess-sub { font-size: 13px; color: var(--muted); }
+.panel.notice { border-color: var(--gold-lo); background: linear-gradient(180deg, rgba(212, 173, 90, 0.12), rgba(212, 173, 90, 0.04)); }
+.panel.notice p { margin: 0; }
+.code-input { font-family: var(--f-mono); font-size: 26px !important; letter-spacing: 0.4em; text-align: center; }
+
+/* PWA */
+.install { border: 1px dashed var(--gold-lo); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: rgba(212, 173, 90, 0.06); }
+.install p { margin: 0; }
+.ios-steps { margin: 0; padding-left: 20px; font-size: 14px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.ios-steps b { color: var(--ink); }
+.share-ic { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line); font-size: 12px; }
+.offline { position: fixed; top: 0; left: 0; right: 0; z-index: 70; text-align: center; font-size: 14px; font-weight: 600; color: var(--velvet); background: var(--warn); padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 8px; }

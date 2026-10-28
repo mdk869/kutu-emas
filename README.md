@@ -13,6 +13,23 @@ Cabutan giliran kutu emas yang adil dan boleh disemak. Admin kunci senarai, seti
 
 Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran untuk semakan lanjutan" dan halaman `#semak`. Pautan peribadi (`#p=…`) masih berfungsi tetapi tidak lagi digunakan dalam aliran utama.
 
+## Akaun admin
+
+- Admin log masuk dengan **emel + kod 6 digit** (Supabase Auth). Kod dipilih berbanding pautan log masuk kerana pautan di iPhone terbuka di Safari, bukan dalam aplikasi yang dipasang.
+- **Cabutan saya** (`/`): semua cabutan atas nama admin, dari mana-mana peranti. Tab Aktif/Arkib, *Guna semula senarai nama*, dan *Tambah cabutan sedia ada* (tuntut dengan pautan admin lama `#a=…`).
+- Papan admin dibuka melalui `#s=<session_id>` dan disemak dengan `auth.uid()`. Pautan admin lama masih berfungsi.
+- Mencipta cabutan **wajib log masuk** (`20261028130000_kutu_require_login.sql`). Peserta tidak perlu akaun.
+
+### Tetapan Supabase Auth (sekali sahaja)
+1. **Authentication → Email Templates → Magic Link** dan **Confirm signup**: masukkan `{{ .Token }}` dalam isi emel supaya kod 6 digit dihantar.
+2. **Authentication → SMTP**: sambung SMTP sendiri (cth. Resend). Emel terbina dalam Supabase hanya menghantar kepada ahli pasukan projek dan dihadkan beberapa emel sejam.
+
+## Aplikasi (PWA) untuk admin
+
+- `public/manifest.webmanifest`, ikon PNG (`public/icons/`, `public/apple-touch-icon.png`) dan `public/sw.js`.
+- Gesaan automatik Chrome disekat di semua halaman; butang **Pasang aplikasi** hanya dipaparkan di halaman admin. iPhone mendapat panduan *Add to Home Screen*. Halaman peserta (`#k=`, `#p=`) tidak pernah memaparkan gesaan.
+- Service worker menyimpan rangka aplikasi sahaja. Panggilan Supabase tidak disimpan, jadi data cabutan sentiasa terkini.
+
 ## Keadilan
 
 | Jaminan | Bagaimana |
@@ -29,7 +46,9 @@ Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran unt
 supabase/migrations/   skema, RLS, fungsi RPC
 src/fair.js            algoritma susunan rawak + semakan (mesti sama dengan SQL)
 src/api.js             panggilan RPC ke Supabase (fetch, tiada SDK)
-src/views/             create, admin, group (pautan group), participant, verify
+src/auth.js            log masuk emel + kod (REST Supabase Auth, tanpa SDK)
+src/pwa.js             gesaan pasang (admin sahaja), service worker, jalur luar talian
+src/views/             home, login, create, admin, group (pautan group), participant, verify
 test/fair.test.mjs     ujian: vektor sama dengan SQL, taburan sekata
 ```
 

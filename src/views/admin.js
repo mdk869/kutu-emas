@@ -1,23 +1,40 @@
 import { api } from '../api.js';
+import { auth } from '../auth.js';
 import {
-  esc, monthLabel, fmtDate, groupLink, adminLink, waHref, copy, toast, ICON,
+  esc, monthLabel, fmtDate, groupLink, waHref, copy, toast, ICON,
   armButton, resultsTable, resultsText, poll, confetti, shortCode, store, fairBox, runFairCheck, techDetails,
 } from '../ui.js';
+import { installCard } from '../pwa.js';
+import { mountLogin } from './login.js';
 
-export function renderAdmin(app, token) {
+/**
+ * Papan admin. Dua cara akses:
+ *   { id }    — melalui akaun (#s=<session_id>), cara utama
+ *   { token } — melalui pautan admin lama (#a=<token>), boleh dituntut ke akaun
+ */
+export function renderAdmin(app, { id = null, token = null }) {
   let v = null;
   let wasDone = null;
   let openMenu = null;
-  const annKey = `kutu-emas-umum-${token.slice(0, 8)}`;
+  let unmountLogin = null;
+  const fetchView = () => (id ? api.ownerView(id) : api.adminView(token));
+  const doPick = (idx) => (id ? api.ownerPick(id, idx) : api.adminPick(token, idx));
+  const annKey = () => `kutu-emas-umum-${v.session_id}`;
   app.innerHTML = `<div class="panel"><p class="muted">Memuatkan…</p></div>`;
 
   async function load() {
+    if (id && !auth.loggedIn) {
+      app.innerHTML = `<section class="panel" id="loginBox"></section>`;
+      unmountLogin = mountLogin(app.querySelector('#loginBox'), () => { unmountLogin = null; load(); }, {
+        lead: 'Log masuk untuk membuka papan admin cabutan ini.',
+      });
+      return;
+    }
     try {
-      v = await api.adminView(token);
+      v = await fetchView();
       draw();
     } catch (e) {
-      app.innerHTML = `<section class="panel"><h1>Cabutan tidak dijumpai</h1><p class="err">${esc(e.message)}</p><a class="btn" href="#">Buat cabutan baru</a></section>`;
-      stop();
+      app.innerHTML = `<section class="panel"><h1>Cabutan tidak dijumpai</h1><p class="lead">${esc(e.message)}</p><a class="btn" href="#">Ke Cabutan saya</a></section>`;
     }
   }
 
@@ -25,7 +42,7 @@ export function renderAdmin(app, token) {
     `*${v.group_name}*\nCabutan giliran kutu emas sudah dibuka 🎉\n\n1. Tekan pautan di bawah\n2. Pilih nama anda\n3. Pilih satu kad emas\n\nSetiap cabutan dipaparkan kepada semua orang secara langsung.\n\n👉 ${groupLink(v.public_id)}\n\n🔒 Kod Kunci: *${shortCode(v.commit_hash)}*\n(Pastikan kod ini sama dengan kod di skrin anda.)`;
 
   function stepsHTML(done, picked) {
-    const announced = store.get(annKey, false);
+    const announced = store.get(annKey(), false);
     const step = (n, state, title, body) => `<li class="step ${state}"><span class="sn">${state === 'done' ? ICON.check : n}</span><div><b class="st">${title}</b>${body}</div></li>`;
     return `<ol class="steps">
       ${step(1, announced || picked > 0 ? 'done' : 'now', 'Kongsi pautan cabutan dalam group', announced || picked > 0
@@ -64,6 +81,7 @@ export function renderAdmin(app, token) {
     wasDone = done;
 
     app.innerHTML = `
+    ${id ? '<a class="back-link" href="#">‹ Cabutan saya</a>' : ''}
     <section class="panel hero-panel">
       <div class="row-between">
         <div class="min0">
@@ -78,6 +96,7 @@ export function renderAdmin(app, token) {
         <span class="progress">${picked}/${v.n}</span>
       </div>
       ${stepsHTML(done, picked)}
+      <div id="install"></div>
     </section>
 
     ${done ? `
@@ -98,15 +117,25 @@ export function renderAdmin(app, token) {
 
     ${done ? '' : `<section class="panel quiet">${lockBadgeAdmin()}</section>`}
 
-    <section class="panel quiet">
-      <h2>Simpan pautan admin</h2>
-      <p class="hint">Pautan ini untuk anda sahaja, untuk kembali ke halaman ini. Jangan kongsi dalam group.</p>
-      <button class="btn small" id="copyAdmin" type="button">Salin pautan admin</button>
-      ${done ? techDetails(v) : ''}
-    </section>`;
+    ${token ? claimHTML() : ''}
+    ${done ? `<section class="panel quiet">${techDetails(v)}</section>` : ''}`;
 
+    installCard(app.querySelector('#install'));
     bind();
     if (done) runFairCheck(app, v);
+  }
+
+  function claimHTML() {
+    if (v.owned && !auth.loggedIn) {
+      return `<section class="panel notice"><p>Cabutan ini sudah disimpan dalam akaun admin. <a href="#">Log masuk</a> untuk buka dari "Cabutan saya".</p></section>`;
+    }
+    return `<section class="panel notice">
+      <h2>Simpan cabutan ini dalam akaun</h2>
+      <p class="hint">Supaya anda boleh buka semula dari mana-mana telefon tanpa pautan ini.</p>
+      ${auth.loggedIn
+        ? `<button class="btn gold small" id="claim" type="button">Simpan ke akaun ${esc(auth.email)}</button>`
+        : '<a class="btn small" href="#">Log masuk untuk simpan</a>'}
+    </section>`;
   }
 
   function lockBadgeAdmin() {
@@ -115,9 +144,16 @@ export function renderAdmin(app, token) {
 
   function bind() {
     const $ = (s) => app.querySelector(s);
-    $('#copyAdmin').onclick = () => copy(adminLink(token), 'Pautan admin disalin.');
+    $('#claim')?.addEventListener('click', async (e) => {
+      e.target.disabled = true;
+      try {
+        const sid = await api.claim(token);
+        toast('Cabutan disimpan dalam akaun anda.');
+        location.hash = `s=${sid}`;
+      } catch (ex) { toast(ex.message, 'warn'); e.target.disabled = false; }
+    });
     $('#copyRes')?.addEventListener('click', () => copy(resultsText(v), 'Teks keputusan disalin.'));
-    $('#announce')?.addEventListener('click', () => { store.set(annKey, true); setTimeout(draw, 300); });
+    $('#announce')?.addEventListener('click', () => { store.set(annKey(), true); setTimeout(draw, 300); });
     app.querySelectorAll('[data-menu]').forEach((b) => {
       b.onclick = () => { const i = +b.dataset.menu; openMenu = openMenu === i ? null : i; draw(); };
     });
@@ -127,7 +163,7 @@ export function renderAdmin(app, token) {
       armButton(b, 'Tekan sekali lagi untuk sahkan', async () => {
         b.disabled = true;
         try {
-          v = await api.adminPick(token, idx);
+          v = await doPick(idx);
           openMenu = null;
           const p = v.participants.find((x) => x.idx === idx);
           toast(`${p.name} dapat Bulan ${p.month}.`);
@@ -143,9 +179,9 @@ export function renderAdmin(app, token) {
   // Lukis semula hanya bila data berubah dan tiada menu terbuka.
   const stop = poll(async () => {
     if (!v || v.status === 'done' || openMenu != null) return;
-    const nv = await api.adminView(token);
+    const nv = await fetchView();
     if (JSON.stringify(nv) !== JSON.stringify(v)) { v = nv; draw(); }
   });
   load();
-  return stop;
+  return () => { stop(); if (unmountLogin) unmountLogin(); };
 }

@@ -1,12 +1,15 @@
 import './style.css';
 import { ICON, setActionBar } from './ui.js';
+import { renderHome } from './views/home.js';
 import { renderCreate } from './views/create.js';
+import { initPwa } from './pwa.js';
 import { renderAdmin } from './views/admin.js';
 import { renderParticipant } from './views/participant.js';
 import { renderGroup } from './views/group.js';
 import { renderVerify } from './views/verify.js';
 
 document.getElementById('logo').innerHTML = ICON.bar;
+initPwa();
 
 const app = document.getElementById('app');
 let cleanup = null;
@@ -16,13 +19,15 @@ function route() {
   setActionBar('');
   const h = location.hash.slice(1);
   window.scrollTo(0, 0);
-  // Peserta & keputusan tidak perlu menu admin "Semakan lanjutan" di atas.
-  document.body.dataset.view = h.slice(0, 2) || 'home';
-  if (h.startsWith('a=')) cleanup = renderAdmin(app, h.slice(2));
+  // Halaman admin vs peserta (gesaan pasang aplikasi hanya untuk admin).
+  document.body.dataset.view = /^(k=|p=)/.test(h) ? 'peserta' : 'admin';
+  if (h.startsWith('s=')) cleanup = renderAdmin(app, { id: h.slice(2) });
+  else if (h.startsWith('a=')) cleanup = renderAdmin(app, { token: h.slice(2) });
   else if (h.startsWith('p=')) cleanup = renderParticipant(app, h.slice(2));
   else if (h.startsWith('k=')) cleanup = renderGroup(app, h.slice(2));
   else if (h.startsWith('semak')) cleanup = renderVerify(app);
-  else cleanup = renderCreate(app);
+  else if (h === 'baru') cleanup = renderCreate(app);
+  else cleanup = renderHome(app);
 }
 
 addEventListener('hashchange', route);
