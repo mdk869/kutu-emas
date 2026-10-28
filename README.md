@@ -4,7 +4,7 @@ Cabutan giliran kutu emas yang adil dan boleh disemak. Admin kunci senarai, seti
 
 ## Aliran
 
-1. **Admin** masukkan nama peserta → server kocok kad dan jana **Kod Kunci** (cth. `EMAS-K7M2-Q9XT`).
+1. **Admin** masukkan nama peserta → server susun kad secara rawak dan jana **Kod Kunci** (cth. `EMAS-K7M2-Q9XT`).
 2. Admin umumkan Kod Kunci dalam group, kemudian tekan **Hantar** untuk menghantar pautan peribadi (`#p=…`) kepada setiap peserta melalui WhatsApp.
 3. **Peserta** pilih satu kad tertutup (siapa cepat dia dapat) dan terus nampak bulan sendiri.
 4. Peserta yang lambat: admin tekan **⋯ → Cabut bagi pihaknya**, dan server pilih kad baki secara rawak.
@@ -26,7 +26,7 @@ Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran unt
 
 ```
 supabase/migrations/   skema, RLS, fungsi RPC
-src/fair.js            algoritma kocokan + semakan (mesti sama dengan SQL)
+src/fair.js            algoritma susunan rawak + semakan (mesti sama dengan SQL)
 src/api.js             panggilan RPC ke Supabase (fetch, tiada SDK)
 src/views/             create, admin, participant, results, verify
 test/fair.test.mjs     ujian: vektor sama dengan SQL, taburan sekata

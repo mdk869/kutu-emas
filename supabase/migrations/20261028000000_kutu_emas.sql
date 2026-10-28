@@ -7,7 +7,7 @@
 --     termasuk kepada admin. Admin hanya nampak bulan bagi kad yang sudah dicabut.
 --   * Kod benih (seed) hanya didedahkan selepas semua peserta selesai.
 --
--- Algoritma kocokan (mesti sama dengan src/fair.js):
+-- Algoritma susunan rawak (mesti sama dengan src/fair.js):
 --   Fisher-Yates ke atas [1..n]; indeks rawak = uint32 big-endian daripada
 --   sha256(seed || int4send(counter)), dengan rejection sampling supaya tiada bias modulo.
 -- Kod pengesahan:

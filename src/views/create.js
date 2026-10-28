@@ -45,7 +45,7 @@ export function renderCreate(app) {
         <div class="field">
           <label for="luck">Nombor bertuah (pilihan)</label>
           <input id="luck" inputmode="numeric" maxlength="40" placeholder="Contoh: 4721" autocomplete="off">
-          <span class="hint">Minta salah seorang peserta beri apa-apa nombor dalam group. Nombor ini dicampur ke dalam kocokan, jadi penganjur pun tidak boleh mengawal keputusan.</span>
+          <span class="hint">Minta salah seorang peserta beri apa-apa nombor dalam group. Nombor ini digabungkan semasa kad disusun, jadi penganjur pun tidak boleh mengawal keputusan.</span>
         </div>
       </details>
       <p id="err" class="err" role="alert"></p>
@@ -55,7 +55,7 @@ export function renderCreate(app) {
   <section class="panel quiet">
     <h2>Bagaimana ia berfungsi</h2>
     <ol class="how-steps">
-      <li><b>Anda kunci senarai.</b> Sistem kocok 12 kad emas. Isinya dikunci dan tiada sesiapa boleh lihat.</li>
+      <li><b>Anda kunci senarai.</b> Sistem susun kad emas secara rawak. Isinya dikunci dan tiada sesiapa boleh lihat.</li>
       <li><b>Hantar pautan kepada peserta.</b> Setiap orang buka di telefon dan pilih satu kad.</li>
       <li><b>Kongsi keputusan dalam group.</b> Bila semua selesai, senarai giliran keluar dan disahkan adil secara automatik.</li>
     </ol>
@@ -91,7 +91,7 @@ export function renderCreate(app) {
     if (!$('#start').value) { err.textContent = 'Pilih bulan pertama kutu.'; return; }
 
     const btns = [bar.querySelector('#goMob')];
-    btns.forEach((b) => { b.disabled = true; b.textContent = 'Mengocok kad…'; });
+    btns.forEach((b) => { b.disabled = true; b.textContent = 'Menyusun kad…'; });
     try {
       const group = normName($('#group').value) || 'Kutu Emas';
       const { admin_token } = await api.createSession(group, `${$('#start').value}-01`, names, normName($('#luck').value));

@@ -17,7 +17,7 @@ test('sama dengan server: kod pengesahan (nama dinormalkan)', async () => {
   );
 });
 
-test('setiap kocokan ialah susunan 1..n yang lengkap', async () => {
+test('setiap susunan rawak ialah susunan 1..n yang lengkap', async () => {
   for (let n = 2; n <= 24; n++) {
     const seed = crypto.getRandomValues(new Uint8Array(32));
     const m = await cardMonths(seed, n);

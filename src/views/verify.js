@@ -30,8 +30,8 @@ export function renderVerify(app) {
   <section class="panel quiet">
     <h2>Kenapa cabutan ini adil</h2>
     <ul class="how">
-      <li><b>Dikocok secara rawak oleh sistem</b>, bukan oleh admin. Boleh dicampur dengan nombor bertuah daripada peserta.</li>
-      <li><b>Dikunci sebelum bermula.</b> Kod Kunci ialah "cap jari" kocokan itu. Kalau isi kad diubah walau sedikit, Kod Kunci akan jadi lain.</li>
+      <li><b>Kad disusun secara rawak oleh sistem</b>, bukan oleh admin. Boleh digabungkan dengan nombor bertuah daripada peserta.</li>
+      <li><b>Dikunci sebelum bermula.</b> Kod Kunci ialah "cap jari" susunan kad itu. Kalau isi kad diubah walau sedikit, Kod Kunci akan jadi lain.</li>
       <li><b>Tiada sesiapa boleh mengintai.</b> Isi kad disimpan di pelayan. Admin pun hanya nampak kad yang sudah dibuka.</li>
     </ul>
   </section>`;
