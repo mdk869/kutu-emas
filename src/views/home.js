@@ -1,9 +1,13 @@
 import { api } from '../api.js';
-import { esc, fmtDate, store, toast, setActionBar } from '../ui.js';
+import { esc, fmtDate, store, toast, setActionBar, ICON, armButton } from '../ui.js';
 import { installCard } from '../pwa.js';
 
 // Rekod cabutan admin disimpan dalam peranti ini (tiada akaun).
 export const SESSIONS_KEY = 'kutu-emas-sesi-saya';
+
+export function forgetSession(token) {
+  store.set(SESSIONS_KEY, store.get(SESSIONS_KEY, []).filter((s) => s.token !== token));
+}
 
 export function rememberSession(entry) {
   const list = store.get(SESSIONS_KEY, []).filter((s) => s.token !== entry.token);
@@ -30,7 +34,15 @@ export function renderHome(app) {
 
   ${list.length ? `
   <section class="panel">
-    <ul class="sessions">${list.map((s) => `<li><a href="#a=${esc(s.token)}"><b>${esc(s.group)}</b><span>${s.n} ahli · ${esc(fmtDate(s.at))}</span><span class="chev" aria-hidden="true">›</span></a></li>`).join('')}</ul>
+    <ul class="sess-list">${list.map((s, i) => `<li class="sess">
+      <a class="sess-main" href="#a=${esc(s.token)}"><b>${esc(s.group)}</b><span class="sess-sub">${s.n} ahli · ${esc(fmtDate(s.at))}</span></a>
+      <button class="btn icon" type="button" data-menu="${i}" aria-label="Pilihan untuk ${esc(s.group)}" aria-expanded="false">${ICON.dots}</button>
+      <div class="pmenu" hidden>
+        <a class="menu-item" href="#edit=${esc(s.token)}">Edit kutu</a>
+        <button class="menu-item warn" type="button" data-forget="${i}">Buang dari senarai</button>
+        <p class="hint">"Buang dari senarai" hanya buang dari telefon ini. Link cabutan masih berfungsi.</p>
+      </div>
+    </li>`).join('')}</ul>
     <p class="hint">Senarai ini disimpan dalam telefon ini sahaja.</p>
   </section>` : ''}
 
@@ -57,6 +69,24 @@ export function renderHome(app) {
 
   setActionBar(`<a class="btn gold wide" href="#baru">+ Buat cabutan baru</a>`);
   installCard(app.querySelector('#install'));
+
+  app.querySelectorAll('[data-menu]').forEach((b) => {
+    b.onclick = () => {
+      const menu = b.nextElementSibling;
+      const open = menu.hidden;
+      app.querySelectorAll('.sess .pmenu').forEach((m) => { m.hidden = true; });
+      app.querySelectorAll('[data-menu]').forEach((x) => x.setAttribute('aria-expanded', 'false'));
+      menu.hidden = !open;
+      b.setAttribute('aria-expanded', String(open));
+    };
+  });
+  app.querySelectorAll('[data-forget]').forEach((b) => {
+    armButton(b, 'Tekan lagi untuk buang', () => {
+      forgetSession(list[+b.dataset.forget].token);
+      toast('Dibuang dari senarai.');
+      renderHome(app);
+    });
+  });
 
   app.querySelector('#addForm').addEventListener('submit', async (e) => {
     e.preventDefault();

@@ -19,6 +19,18 @@ Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran unt
 - **Cabutan saya** (`/`) menyenaraikan cabutan yang dicipta atau dibuka di peranti ini (disimpan dalam pelayar).
 - **Tambah cabutan sedia ada**: tampal pautan admin untuk memasukkan cabutan dari peranti lain, contohnya selepas memasang aplikasi di iPhone (storan aplikasi berasingan daripada Safari).
 
+## Edit & padam kutu
+
+| Tindakan | Bila dibenarkan |
+|---|---|
+| Tukar nama group | Bila-bila masa |
+| Ubah nama ahli / bulan mula | Hanya sebelum ada ahli yang cabut. Ubah nama ahli = kad disusun semula + Kod Kunci baru; link group kekal sama |
+| Padam terus (link berhenti berfungsi) | Hanya sebelum ada ahli yang cabut |
+| Buang dari senarai (telefon ini sahaja) | Bila-bila masa |
+
+- Ahli nampak notis "Senarai ahli dikemas kini" dan masa kunci baru.
+- `kutu_group_pick` menyemak Kod Kunci semasa: ahli yang sedang memilih ketika admin mengubah senarai diminta pilih nama semula, supaya tiada kad tercabut atas nama orang lain.
+
 ## Aplikasi (PWA) untuk admin
 
 - `public/manifest.webmanifest`, ikon PNG (`public/icons/`, `public/apple-touch-icon.png`) dan `public/sw.js`.
@@ -46,7 +58,7 @@ supabase/migrations/   skema, RLS, fungsi RPC
 src/fair.js            algoritma susunan rawak + semakan (mesti sama dengan SQL)
 src/api.js             panggilan RPC ke Supabase (fetch, tiada SDK)
 src/pwa.js             gesaan pasang (admin sahaja), service worker, jalur luar talian
-src/views/             home, create, admin, group (pautan group), participant, verify
+src/views/             home, create, edit, admin, group (pautan group), participant, verify
 test/fair.test.mjs     ujian: vektor sama dengan SQL, taburan sekata
 ```
 

@@ -184,7 +184,7 @@ export function renderGroup(app, publicId) {
     e.target.disabled = true;
     e.target.textContent = 'Membuka…';
     try {
-      v = await api.groupPick(publicId, candidate, selected);
+      v = await api.groupPick(publicId, candidate, selected, v.commit_hash);
       me = candidate;
       store.set(meKey, me);
       stage = 'board'; candidate = null; selected = null; justOpened = true;
@@ -194,7 +194,7 @@ export function renderGroup(app, publicId) {
       toast(ex.message, 'warn');
       selected = null;
       v = await api.groupView(publicId).catch(() => v);
-      if (person(candidate)?.card != null) { stage = 'board'; candidate = null; }
+      if (ex.code === 'KT410' || !person(candidate) || person(candidate).card != null) { stage = 'board'; candidate = null; }
       draw();
     } finally {
       busy = false;
@@ -218,7 +218,14 @@ export function renderGroup(app, publicId) {
     if (JSON.stringify(nv) === JSON.stringify(v)) return;
     const before = new Set(picked().map((p) => p.idx));
     const finished = nv.status === 'done' && v.status !== 'done';
+    const relocked = nv.commit_hash !== v.commit_hash;
     v = nv;
+    if (relocked) {
+      toast('Admin dah kemas kini senarai nama. Sila pilih nama anda semula.', 'warn');
+      stage = 'board'; candidate = null; selected = null; me = null; store.set(meKey, null);
+      draw();
+      return;
+    }
     const fresh = picked().filter((p) => !before.has(p.idx));
     // Nama yang sedang disahkan sudah dicabut di telefon lain.
     if (candidate != null && person(candidate).card != null) {
