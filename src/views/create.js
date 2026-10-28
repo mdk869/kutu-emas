@@ -1,9 +1,7 @@
 import { api } from '../api.js';
-import { auth } from '../auth.js';
-import { esc, store, setActionBar } from '../ui.js';
+import { setActionBar, esc } from '../ui.js';
 import { normName } from '../fair.js';
-import { mountLogin } from './login.js';
-import { REUSE_KEY } from './home.js';
+import { rememberSession } from './home.js';
 
 function nextMonth() {
   const d = new Date();
@@ -12,31 +10,22 @@ function nextMonth() {
 }
 
 export function renderCreate(app) {
-  if (!auth.loggedIn) {
-    setActionBar('');
-    app.innerHTML = `<section class="panel" id="loginBox"></section>`;
-    return mountLogin(app.querySelector('#loginBox'), () => renderCreate(app), {
-      lead: 'Cabutan disimpan atas nama akaun anda, supaya anda boleh buka semula dari mana-mana telefon.',
-    });
-  }
-  const reuse = store.get(REUSE_KEY, null);
-  store.set(REUSE_KEY, null);
   app.innerHTML = `
   <a class="back-link" href="#">‹ Cabutan saya</a>
   <section class="panel">
     <div>
       <h1>Cabutan baru</h1>
-      <p class="lead">${reuse ? 'Senarai nama disalin daripada cabutan lepas. Semak dan ubah jika perlu.' : 'Masukkan nama peserta. Selepas dikunci, anda kongsi satu pautan dalam group dan setiap orang cabut kad sendiri.'}</p>
+      <p class="lead">Masukkan nama peserta. Selepas dikunci, anda kongsi satu pautan dalam group dan setiap orang cabut kad sendiri.</p>
     </div>
     <form id="f" class="stack" novalidate>
       <div class="field">
         <label for="group">Nama kumpulan</label>
-        <input id="group" maxlength="80" placeholder="Contoh: Kutu Emas Geng Pejabat" autocomplete="off" value="${esc(reuse?.group || '')}">
+        <input id="group" maxlength="80" placeholder="Contoh: Kutu Emas Geng Pejabat" autocomplete="off">
       </div>
       <div class="field">
         <label for="names">Nama peserta</label>
         <span class="hint">Satu nama satu baris. Boleh salin dan tampal terus dari WhatsApp.</span>
-        <textarea id="names" rows="8" placeholder="Siti Aminah&#10;Rosnah&#10;Farid">${esc((reuse?.names || []).join('\n'))}</textarea>
+        <textarea id="names" rows="8" placeholder="Siti Aminah&#10;Rosnah&#10;Farid"></textarea>
         <ol class="chips" id="chips" aria-label="Senarai peserta"></ol>
         <span id="nameErr" class="warn-text" role="alert"></span>
       </div>
@@ -98,8 +87,9 @@ export function renderCreate(app) {
     btns.forEach((b) => { b.disabled = true; b.textContent = 'Menyusun kad…'; });
     try {
       const group = normName($('#group').value) || 'Kutu Emas';
-      const { session_id } = await api.createSession(group, `${$('#start').value}-01`, names, normName($('#luck').value));
-      location.hash = `s=${session_id}`;
+      const { admin_token } = await api.createSession(group, `${$('#start').value}-01`, names, normName($('#luck').value));
+      rememberSession({ token: admin_token, group, n: names.length, at: new Date().toISOString() });
+      location.hash = `a=${admin_token}`;
     } catch (ex) {
       err.textContent = ex.message;
       err.scrollIntoView({ block: 'center', behavior: 'smooth' });

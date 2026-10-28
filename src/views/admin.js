@@ -1,37 +1,26 @@
 import { api } from '../api.js';
-import { auth } from '../auth.js';
 import {
-  esc, monthLabel, fmtDate, groupLink, waHref, copy, toast, ICON,
+  esc, monthLabel, fmtDate, groupLink, adminLink, waHref, copy, toast, ICON,
   armButton, resultsTable, resultsText, poll, confetti, shortCode, store, fairBox, runFairCheck, techDetails,
 } from '../ui.js';
 import { installCard } from '../pwa.js';
-import { mountLogin } from './login.js';
+import { rememberSession } from './home.js';
 
-/**
- * Papan admin. Dua cara akses:
- *   { id }    — melalui akaun (#s=<session_id>), cara utama
- *   { token } — melalui pautan admin lama (#a=<token>), boleh dituntut ke akaun
- */
-export function renderAdmin(app, { id = null, token = null }) {
+/** Papan admin, dibuka melalui pautan admin (#a=<token>). */
+export function renderAdmin(app, token) {
   let v = null;
   let wasDone = null;
   let openMenu = null;
-  let unmountLogin = null;
-  const fetchView = () => (id ? api.ownerView(id) : api.adminView(token));
-  const doPick = (idx) => (id ? api.ownerPick(id, idx) : api.adminPick(token, idx));
+  const fetchView = () => api.adminView(token);
+  const doPick = (idx) => api.adminPick(token, idx);
   const annKey = () => `kutu-emas-umum-${v.session_id}`;
   app.innerHTML = `<div class="panel"><p class="muted">Memuatkan…</p></div>`;
 
   async function load() {
-    if (id && !auth.loggedIn) {
-      app.innerHTML = `<section class="panel" id="loginBox"></section>`;
-      unmountLogin = mountLogin(app.querySelector('#loginBox'), () => { unmountLogin = null; load(); }, {
-        lead: 'Log masuk untuk membuka papan admin cabutan ini.',
-      });
-      return;
-    }
     try {
       v = await fetchView();
+      // Pastikan cabutan ini ada dalam "Cabutan saya" pada peranti ini.
+      rememberSession({ token, group: v.group_name, n: v.n, at: v.created_at });
       draw();
     } catch (e) {
       app.innerHTML = `<section class="panel"><h1>Cabutan tidak dijumpai</h1><p class="lead">${esc(e.message)}</p><a class="btn" href="#">Ke Cabutan saya</a></section>`;
@@ -81,7 +70,7 @@ export function renderAdmin(app, { id = null, token = null }) {
     wasDone = done;
 
     app.innerHTML = `
-    ${id ? '<a class="back-link" href="#">‹ Cabutan saya</a>' : ''}
+    <a class="back-link" href="#">‹ Cabutan saya</a>
     <section class="panel hero-panel">
       <div class="row-between">
         <div class="min0">
@@ -117,25 +106,16 @@ export function renderAdmin(app, { id = null, token = null }) {
 
     ${done ? '' : `<section class="panel quiet">${lockBadgeAdmin()}</section>`}
 
-    ${token ? claimHTML() : ''}
-    ${done ? `<section class="panel quiet">${techDetails(v)}</section>` : ''}`;
+    <section class="panel quiet">
+      <h2>Simpan pautan admin</h2>
+      <p class="hint">Pautan ini untuk anda sahaja, untuk buka halaman ini dari peranti lain. Jangan kongsi dalam group.</p>
+      <button class="btn small" id="copyAdmin" type="button">Salin pautan admin</button>
+      ${done ? techDetails(v) : ''}
+    </section>`;
 
     installCard(app.querySelector('#install'));
     bind();
     if (done) runFairCheck(app, v);
-  }
-
-  function claimHTML() {
-    if (v.owned && !auth.loggedIn) {
-      return `<section class="panel notice"><p>Cabutan ini sudah disimpan dalam akaun admin. <a href="#">Log masuk</a> untuk buka dari "Cabutan saya".</p></section>`;
-    }
-    return `<section class="panel notice">
-      <h2>Simpan cabutan ini dalam akaun</h2>
-      <p class="hint">Supaya anda boleh buka semula dari mana-mana telefon tanpa pautan ini.</p>
-      ${auth.loggedIn
-        ? `<button class="btn gold small" id="claim" type="button">Simpan ke akaun ${esc(auth.email)}</button>`
-        : '<a class="btn small" href="#">Log masuk untuk simpan</a>'}
-    </section>`;
   }
 
   function lockBadgeAdmin() {
@@ -144,14 +124,7 @@ export function renderAdmin(app, { id = null, token = null }) {
 
   function bind() {
     const $ = (s) => app.querySelector(s);
-    $('#claim')?.addEventListener('click', async (e) => {
-      e.target.disabled = true;
-      try {
-        const sid = await api.claim(token);
-        toast('Cabutan disimpan dalam akaun anda.');
-        location.hash = `s=${sid}`;
-      } catch (ex) { toast(ex.message, 'warn'); e.target.disabled = false; }
-    });
+    $('#copyAdmin').onclick = () => copy(adminLink(token), 'Pautan admin disalin.');
     $('#copyRes')?.addEventListener('click', () => copy(resultsText(v), 'Teks keputusan disalin.'));
     $('#announce')?.addEventListener('click', () => { store.set(annKey(), true); setTimeout(draw, 300); });
     app.querySelectorAll('[data-menu]').forEach((b) => {
@@ -183,5 +156,5 @@ export function renderAdmin(app, { id = null, token = null }) {
     if (JSON.stringify(nv) !== JSON.stringify(v)) { v = nv; draw(); }
   });
   load();
-  return () => { stop(); if (unmountLogin) unmountLogin(); };
+  return stop;
 }

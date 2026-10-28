@@ -21,8 +21,7 @@ function route() {
   window.scrollTo(0, 0);
   // Halaman admin vs peserta (gesaan pasang aplikasi hanya untuk admin).
   document.body.dataset.view = /^(k=|p=)/.test(h) ? 'peserta' : 'admin';
-  if (h.startsWith('s=')) cleanup = renderAdmin(app, { id: h.slice(2) });
-  else if (h.startsWith('a=')) cleanup = renderAdmin(app, { token: h.slice(2) });
+  if (h.startsWith('a=')) cleanup = renderAdmin(app, h.slice(2));
   else if (h.startsWith('p=')) cleanup = renderParticipant(app, h.slice(2));
   else if (h.startsWith('k=')) cleanup = renderGroup(app, h.slice(2));
   else if (h.startsWith('semak')) cleanup = renderVerify(app);
