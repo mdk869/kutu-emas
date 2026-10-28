@@ -1,5 +1,5 @@
 import { api } from '../api.js';
-import { esc, fmtDate, store } from '../ui.js';
+import { esc, fmtDate, store, setActionBar } from '../ui.js';
 import { normName } from '../fair.js';
 
 const SESSIONS_KEY = 'kutu-emas-sesi-saya';
@@ -13,84 +13,87 @@ function nextMonth() {
 export function renderCreate(app) {
   const mine = store.get(SESSIONS_KEY, []);
   app.innerHTML = `
-  <div class="cols">
-    <section class="panel">
-      <h1>Cipta cabutan baru</h1>
-      <p class="lead">Masukkan senarai peserta. Selepas dikunci, kad dikocok di server dan setiap peserta dapat pautan sendiri untuk cabut dari telefon.</p>
-      <form id="f" class="stack" novalidate>
-        <div class="field">
-          <label for="group">Nama kumpulan</label>
-          <input id="group" maxlength="80" placeholder="cth. Kutu Emas Geng Pejabat" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="names">Nama peserta</label>
-          <span class="hint">Satu baris satu nama. Boleh tampal terus dari WhatsApp.</span>
-          <textarea id="names" rows="12" placeholder="Siti Aminah&#10;Rosnah&#10;Farid&#10;…"></textarea>
-          <div class="name-meta"><span id="count" class="count">0 peserta</span><span id="nameErr" class="warn-text"></span></div>
-        </div>
-        <div class="field">
-          <label for="start">Bulan pertama kutu</label>
-          <input id="start" type="month" value="${nextMonth()}">
-        </div>
-        <div class="field">
-          <label for="luck">Nombor bertuah peserta (pilihan)</label>
-          <input id="luck" inputmode="numeric" maxlength="40" placeholder="cth. 4721" autocomplete="off">
-          <span class="hint">Minta seorang peserta beri apa-apa nombor dalam group. Nombor ini dicampur ke dalam kocokan, jadi penganjur pun tidak boleh mengawal keputusan.</span>
-        </div>
-        <div id="err" class="err" role="alert"></div>
-        <button class="btn gold" id="go" type="submit">Kunci senarai &amp; kocok kad</button>
-        <p class="hint">Senarai tidak boleh diubah selepas dikunci.</p>
-      </form>
-    </section>
+  ${mine.length ? `
+  <section class="panel">
+    <h2>Cabutan saya</h2>
+    <ul class="sessions">${mine.map((s) => `<li><a href="#a=${esc(s.token)}"><b>${esc(s.group)}</b><span>${s.n} peserta · ${esc(fmtDate(s.at))}</span><span class="chev" aria-hidden="true">›</span></a></li>`).join('')}</ul>
+  </section>` : ''}
 
-    <aside class="stack">
-      <section class="panel">
-        <h2>Cara ia berfungsi</h2>
-        <ol class="how-steps">
-          <li><b>Kunci senarai.</b> Server mengocok kad dan menjana kod pengesahan. Umumkan kod ini dalam group.</li>
-          <li><b>Hantar pautan.</b> Setiap peserta dapat pautan peribadi. Mereka pilih satu kad tertutup dan nampak bulan sendiri.</li>
-          <li><b>Kongsi keputusan.</b> Bila semua selesai, senarai penuh dan kod benih dibuka untuk semua. Sesiapa boleh semak keputusan tidak diubah.</li>
-        </ol>
-      </section>
-      <section class="panel">
-        <h2>Sesi saya</h2>
-        ${mine.length
-          ? `<ul class="sessions">${mine.map((s) => `<li><a href="#a=${esc(s.token)}"><b>${esc(s.group)}</b><span>${s.n} peserta · ${esc(fmtDate(s.at))}</span></a></li>`).join('')}</ul>
-             <p class="hint">Disimpan dalam pelayar ini saja. Simpan pautan admin anda di tempat lain juga.</p>`
-          : `<p class="empty">Belum ada sesi pada peranti ini. Sesi yang anda cipta akan tersenarai di sini.</p>`}
-      </section>
-    </aside>
-  </div>`;
+  <section class="panel">
+    <div>
+      <h1>Cabutan baru</h1>
+      <p class="lead">Masukkan nama peserta. Setiap orang akan dapat pautan sendiri untuk cabut kad dari telefon.</p>
+    </div>
+    <form id="f" class="stack" novalidate>
+      <div class="field">
+        <label for="group">Nama kumpulan</label>
+        <input id="group" maxlength="80" placeholder="Contoh: Kutu Emas Geng Pejabat" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="names">Nama peserta</label>
+        <span class="hint">Satu nama satu baris. Boleh salin dan tampal terus dari WhatsApp.</span>
+        <textarea id="names" rows="8" placeholder="Siti Aminah&#10;Rosnah&#10;Farid"></textarea>
+        <ol class="chips" id="chips" aria-label="Senarai peserta"></ol>
+        <span id="nameErr" class="warn-text" role="alert"></span>
+      </div>
+      <div class="field">
+        <label for="start">Bulan pertama kutu</label>
+        <input id="start" type="month" value="${nextMonth()}">
+      </div>
+      <details class="more">
+        <summary>Pilihan tambahan</summary>
+        <div class="field">
+          <label for="luck">Nombor bertuah (pilihan)</label>
+          <input id="luck" inputmode="numeric" maxlength="40" placeholder="Contoh: 4721" autocomplete="off">
+          <span class="hint">Minta salah seorang peserta beri apa-apa nombor dalam group. Nombor ini dicampur ke dalam kocokan, jadi penganjur pun tidak boleh mengawal keputusan.</span>
+        </div>
+      </details>
+      <p id="err" class="err" role="alert"></p>
+      <button class="btn gold wide desk-only" id="goDesk" type="submit">Kunci &amp; mula cabutan</button>
+    </form>
+  </section>
+
+  <section class="panel quiet">
+    <h2>Bagaimana ia berfungsi</h2>
+    <ol class="how-steps">
+      <li><b>Anda kunci senarai.</b> Sistem kocok 12 kad emas. Isinya dikunci dan tiada sesiapa boleh lihat.</li>
+      <li><b>Hantar pautan kepada peserta.</b> Setiap orang buka di telefon dan pilih satu kad.</li>
+      <li><b>Kongsi keputusan dalam group.</b> Bila semua selesai, senarai giliran keluar dan disahkan adil secara automatik.</li>
+    </ol>
+  </section>`;
 
   const $ = (s) => app.querySelector(s);
+  const bar = setActionBar(`<button class="btn gold wide" id="goMob" type="button">Kunci &amp; mula cabutan</button>`);
   const parse = () => $('#names').value.split('\n').map(normName).filter(Boolean);
 
   function checkNames() {
     const names = parse();
-    $('#count').textContent = `${names.length} peserta`;
     const seen = new Set();
-    const dup = names.find((n) => (seen.has(n.toLowerCase()) ? true : (seen.add(n.toLowerCase()), false)));
+    const dups = new Set();
+    names.forEach((n) => { const k = n.toLowerCase(); if (seen.has(k)) dups.add(k); seen.add(k); });
+    $('#chips').innerHTML = names.map((n) => `<li class="${dups.has(n.toLowerCase()) ? 'dup' : ''}">${esc(n)}</li>`).join('');
     let msg = '';
-    if (dup) msg = `"${dup}" berulang.`;
+    if (dups.size) msg = 'Ada nama yang sama. Tambah sesuatu untuk bezakan, contohnya "Ali (Kedai)".';
     else if (names.length > 24) msg = 'Maksimum 24 peserta.';
-    else if (names.some((n) => n.length > 60)) msg = 'Ada nama melebihi 60 aksara.';
+    else if (names.some((n) => n.length > 60)) msg = 'Ada nama yang terlalu panjang.';
     $('#nameErr').textContent = msg;
+    const label = names.length >= 2 ? `Kunci &amp; mula cabutan (${names.length} orang)` : 'Kunci &amp; mula cabutan';
+    $('#goDesk').innerHTML = label;
+    bar.querySelector('#goMob').innerHTML = label;
     return { names, msg };
   }
   $('#names').addEventListener('input', checkNames);
 
-  $('#f').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  async function submit() {
     const { names, msg } = checkNames();
     const err = $('#err');
     err.textContent = '';
-    if (names.length < 2) { err.textContent = 'Masukkan sekurang-kurangnya 2 nama peserta.'; return; }
-    if (msg) { err.textContent = msg; return; }
+    if (names.length < 2) { err.textContent = 'Masukkan sekurang-kurangnya 2 nama peserta.'; $('#names').focus(); return; }
+    if (msg) { err.textContent = msg; $('#names').focus(); return; }
     if (!$('#start').value) { err.textContent = 'Pilih bulan pertama kutu.'; return; }
 
-    const btn = $('#go');
-    btn.disabled = true;
-    btn.textContent = 'Mengocok kad…';
+    const btns = [$('#goDesk'), bar.querySelector('#goMob')];
+    btns.forEach((b) => { b.disabled = true; b.textContent = 'Mengocok kad…'; });
     try {
       const group = normName($('#group').value) || 'Kutu Emas';
       const { admin_token } = await api.createSession(group, `${$('#start').value}-01`, names, normName($('#luck').value));
@@ -98,10 +101,13 @@ export function renderCreate(app) {
       location.hash = `a=${admin_token}`;
     } catch (ex) {
       err.textContent = ex.message;
-      btn.disabled = false;
-      btn.textContent = 'Kunci senarai & kocok kad';
+      err.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      btns.forEach((b) => { b.disabled = false; });
+      checkNames();
     }
-  });
+  }
+  $('#f').addEventListener('submit', (e) => { e.preventDefault(); submit(); });
+  bar.querySelector('#goMob').addEventListener('click', submit);
 
   return () => {};
 }

@@ -47,6 +47,24 @@ export async function commitHash(seedHex, names) {
   return toHex(await sha256(enc.encode(text)));
 }
 
+/**
+ * Kod Kunci: bentuk pendek kod pengesahan untuk dibaca manusia, cth. "EMAS-K7M2-Q9XT".
+ * 40 bit pertama hash dalam Crockford base32 (tiada huruf mengelirukan I, L, O, U).
+ * Semakan automatik tetap membandingkan hash penuh.
+ */
+const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+export function shortCode(hashHex) {
+  const h = String(hashHex || '').toLowerCase();
+  if (!/^[0-9a-f]{10}/.test(h)) return '';
+  let n = BigInt('0x' + h.slice(0, 10));
+  let out = '';
+  for (let i = 0; i < 8; i++) {
+    out = B32[Number(n & 31n)] + out;
+    n >>= 5n;
+  }
+  return `EMAS-${out.slice(0, 4)}-${out.slice(4)}`;
+}
+
 /** Semak semula keputusan: kira kod pengesahan dan isi setiap kad daripada benih + nama. */
 export async function verify(seedHex, names) {
   const clean = names.map(normName).filter(Boolean);

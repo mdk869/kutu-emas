@@ -4,27 +4,28 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#260b12">
-    <meta name="description" content="Cabutan giliran kutu emas yang adil dan boleh disemak. Setiap peserta cabut kad sendiri dari telefon.">
+    <meta name="description" content="Cabutan giliran kutu emas yang adil. Setiap peserta cabut kad sendiri dari telefon.">
+    <meta property="og:title" content="Cabutan Kutu Emas">
+    <meta property="og:description" content="Pilih satu kad emas untuk tahu giliran anda terima emas.">
     <title>Cabutan Kutu Emas</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600;700&display=swap">
   </head>
   <body>
     <div class="wrap">
       <header class="top">
-        <a class="brand" href="#">
-          <span class="mark" aria-hidden="true"><span>916</span></span>
+        <a class="brand" href="#" aria-label="Cabutan Kutu Emas, laman utama">
+          <span class="mark" id="logo"></span>
           <span class="brand-text">
             <span class="eyebrow">Cabutan giliran</span>
             <span class="h1">Kutu Emas</span>
           </span>
         </a>
-        <nav class="nav"><a href="#semak">Semak keputusan</a></nav>
       </header>
       <main id="app" aria-live="polite"></main>
-      <footer class="foot">Kocokan dibuat di server dengan penjana rawak kriptografi. Setiap keputusan boleh disemak semula.</footer>
+      <footer class="foot">Setiap cabutan dikunci sebelum bermula dan disahkan secara automatik. <a href="#semak">Semakan lanjutan</a></footer>
     </div>
     <canvas id="confetti" aria-hidden="true"></canvas>
     <script type="module" src="/src/main.js"></script>

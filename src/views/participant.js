@@ -1,6 +1,8 @@
 import { api } from '../api.js';
-import { esc, groupHash, monthLabel, cardHTML, resultsTable, toast, poll, confetti } from '../ui.js';
-import { verify } from '../fair.js';
+import {
+  esc, monthLabel, cardHTML, resultsTable, toast, poll, confetti, lockBadge, fairBox, runFairCheck,
+  techDetails, calendarHref, setActionBar, ICON,
+} from '../ui.js';
 
 export function renderParticipant(app, token) {
   let v = null;
@@ -14,131 +16,120 @@ export function renderParticipant(app, token) {
       v = await api.participantView(token);
       draw();
     } catch (e) {
-      app.innerHTML = `<section class="panel"><h1>Pautan tidak sah</h1><p class="err">${esc(e.message)}</p></section>`;
+      app.innerHTML = `<section class="panel"><h1>Pautan tidak sah</h1><p class="lead">${esc(e.message)}</p></section>`;
       stop();
     }
   }
 
+  function firstName(n) { return n.split(' ')[0]; }
+
   function drawPick() {
     const taken = new Set(v.taken);
-    const cards = Array.from({ length: v.n }, (_, i) => i + 1)
-      .map((c) => cardHTML(c, { taken: taken.has(c), selected: selected === c }))
-      .join('');
+    const left = v.n - v.taken.length;
     return `
+    <section class="panel hero-panel">
+      <div class="eyebrow">${esc(v.group_name)}</div>
+      <h1>Hai ${esc(firstName(v.me.name))}, pilih satu kad</h1>
+      <p class="lead">Kad mana pun yang anda pilih, peluangnya sama. Bulan giliran anda terus dipaparkan selepas kad dibuka.</p>
+    </section>
     <section class="panel stage">
-      <div class="banner">
-        <div><div class="sub">Giliran anda</div><div class="who">Pilih satu kad</div></div>
-        <div class="progress">${v.taken.length} / ${v.n} diambil</div>
-      </div>
-      <div class="cards" id="cards">${cards}</div>
-      <div class="confirm" ${selected ? '' : 'hidden'}>
-        <p>Anda pilih <b>Kad ${selected ?? ''}</b>. Pilihan ini muktamad dan tidak boleh ditukar.</p>
-        <div class="row">
-          <button class="btn gold" id="openBtn" type="button">Buka Kad ${selected ?? ''}</button>
-          <button class="btn" id="cancelBtn" type="button">Tukar kad</button>
-        </div>
-      </div>
-      <p class="hint">Isi setiap kad sudah ditetapkan dan disimpan di server sebelum sesiapa memilih. Kad mana pun yang anda pilih, peluangnya sama.</p>
-    </section>`;
+      <div class="cards" id="cards">${Array.from({ length: v.n }, (_, i) => i + 1)
+        .map((c) => cardHTML(c, { taken: taken.has(c), selected: selected === c })).join('')}</div>
+      <p class="hint center">${left} kad lagi boleh dipilih. Kad gelap sudah diambil orang lain.</p>
+    </section>
+    <section class="panel quiet">${lockBadge(v)}</section>`;
   }
 
   function drawMine() {
     const m = v.me;
+    const done = v.status === 'done';
+    const picked = v.taken.length;
     return `
     <section class="panel mine">
+      <div class="eyebrow">${esc(v.group_name)}</div>
       <div class="mine-card">${cardHTML(m.card, { open: !justOpened, reveal: true, month: m.month, start: v.start_month })}</div>
-      <div class="mine-text">
-        <div class="eyebrow">Giliran anda</div>
-        <div class="big">Bulan ${m.month}</div>
-        <p class="lead">Anda terima emas pada <b>${esc(monthLabel(v.start_month, m.month))}</b>.</p>
-        ${m.by_admin ? '<p class="hint">Kad ini dicabut secara rawak oleh admin bagi pihak anda.</p>' : ''}
-        ${v.status === 'done' ? '' : `<p class="muted">Keputusan penuh akan dibuka bila semua peserta selesai (${v.taken.length}/${v.n}).</p>`}
-      </div>
-    </section>`;
-  }
-
-  function drawPeople() {
-    return `
+      <p class="mine-lead">${esc(firstName(m.name))}, giliran anda terima emas:</p>
+      <div class="big">${esc(monthLabel(v.start_month, m.month))}</div>
+      <p class="muted">Bulan ke-${m.month} daripada ${v.n}${m.by_admin ? ' · dicabut oleh admin bagi pihak anda' : ''}</p>
+      <a class="btn wide" href="${calendarHref(v.group_name, v.start_month, m.month)}" target="_blank" rel="noopener">${ICON.cal} Tambah peringatan ke kalendar</a>
+    </section>
+    ${done ? '' : `
     <section class="panel">
-      <h2>Status peserta</h2>
-      <ul class="people">${v.people.map((p) => `<li class="${p.picked ? 'yes' : ''}"><span class="dot" aria-hidden="true"></span>${esc(p.name)}<span class="sr">${p.picked ? ' sudah cabut' : ' belum cabut'}</span></li>`).join('')}</ul>
-    </section>`;
+      <h2>Menunggu peserta lain</h2>
+      <div class="progress-wrap">
+        <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${v.n}" aria-valuenow="${picked}"><span style="width:${(picked / v.n) * 100}%"></span></div>
+        <span class="progress">${picked}/${v.n}</span>
+      </div>
+      <p class="hint">Senarai giliran penuh akan keluar di sini bila semua sudah cabut. Anda boleh tutup halaman ini dan buka semula pautan yang sama nanti.</p>
+      <ul class="people">${v.people.map((p) => `<li class="${p.picked ? 'yes' : ''}">${p.picked ? ICON.check : '<span class="dot"></span>'}${esc(p.name)}<span class="sr">${p.picked ? ' sudah cabut' : ' belum cabut'}</span></li>`).join('')}</ul>
+    </section>
+    <section class="panel quiet">${lockBadge(v)}</section>`}`;
   }
 
   function drawDone() {
     return `
     <section class="panel">
-      <h2>Keputusan penuh</h2>
-      ${resultsTable(v.results, v.start_month)}
-      <div class="verify-auto" id="vauto"><span class="muted">Menyemak keputusan…</span></div>
-      <details class="seal-details"><summary>Kod benih &amp; cara semak</summary>
-        <div class="seal"><span class="lbl">Kod benih</span><div class="mono">${v.seed}</div>
-        <p>Tampal kod benih dan senarai nama di halaman <a href="#semak">Semak keputusan</a>. Hasilnya mesti sama dengan kod pengesahan dan keputusan di atas.</p></div>
-      </details>
+      <h2>Senarai giliran penuh</h2>
+      ${resultsTable(v.results, v.start_month, v.me.name)}
+      ${fairBox()}
+      ${techDetails(v)}
     </section>`;
+  }
+
+  function updateBar() {
+    if (v.me.card != null || v.status === 'done') { setActionBar(''); return; }
+    const bar = setActionBar(selected
+      ? `<div class="bar-row"><button class="btn" id="cancelBtn" type="button">Batal</button><button class="btn gold grow" id="openBtn" type="button">Buka Kad ${selected}</button></div>
+         <p class="bar-note">Pilihan muktamad, tidak boleh ditukar.</p>`
+      : `<p class="bar-hint">Ketik satu kad untuk memilih</p>`);
+    bar.querySelector('#cancelBtn')?.addEventListener('click', () => { selected = null; draw(); });
+    bar.querySelector('#openBtn')?.addEventListener('click', openCard);
   }
 
   function draw() {
     const picked = v.me.card != null;
-    app.innerHTML = `
-    <section class="panel hero-panel">
-      <div class="eyebrow">${esc(v.group_name)}</div>
-      <h1>Hai, ${esc(v.me.name)}</h1>
-      <div class="seal compact"><span class="lbl">Kod pengesahan</span><div class="mono">${groupHash(v.commit_hash)}</div>
-      <p>Pastikan kod ini sama dengan yang admin umumkan dalam group.</p></div>
-    </section>
-    ${picked ? drawMine() : drawPick()}
-    ${v.status === 'done' ? drawDone() : drawPeople()}`;
+    app.innerHTML = (picked ? drawMine() : drawPick()) + (v.status === 'done' ? drawDone() : '');
+    updateBar();
 
     if (picked && justOpened) {
       justOpened = false;
-      requestAnimationFrame(() => requestAnimationFrame(() => app.querySelector('.mine-card .card')?.classList.add('open')));
-      confetti();
+      setTimeout(() => app.querySelector('.mine-card .card')?.classList.add('open'), 120);
+      setTimeout(confetti, 700);
     }
-    if (!picked) bindPick();
-    if (v.status === 'done') autoVerify();
+    if (!picked) {
+      app.querySelector('#cards').addEventListener('click', (e) => {
+        const b = e.target.closest('.card');
+        if (!b || b.disabled || busy) return;
+        selected = +b.dataset.card;
+        app.querySelectorAll('.card').forEach((c) => {
+          const on = +c.dataset.card === selected;
+          c.classList.toggle('selected', on);
+          c.setAttribute('aria-pressed', on);
+        });
+        updateBar();
+      });
+    }
+    if (v.status === 'done') runFairCheck(app, v);
   }
 
-  function bindPick() {
-    app.querySelector('#cards').addEventListener('click', (e) => {
-      const b = e.target.closest('.card');
-      if (!b || b.disabled || busy) return;
-      selected = +b.dataset.card;
-      draw();
-      app.querySelector('.confirm')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
-    app.querySelector('#cancelBtn')?.addEventListener('click', () => { selected = null; draw(); });
-    app.querySelector('#openBtn')?.addEventListener('click', async (e) => {
-      if (busy) return;
-      busy = true;
-      e.target.disabled = true;
-      e.target.textContent = 'Membuka…';
-      try {
-        v = await api.pick(token, selected);
-        justOpened = true;
-        selected = null;
-        draw();
-      } catch (ex) {
-        toast(ex.message, 'warn');
-        selected = null;
-        v = await api.participantView(token).catch(() => v);
-        draw();
-      } finally {
-        busy = false;
-      }
-    });
-  }
-
-  async function autoVerify() {
-    const box = app.querySelector('#vauto');
+  async function openCard(e) {
+    if (busy || !selected) return;
+    busy = true;
+    e.target.disabled = true;
+    e.target.textContent = 'Membuka…';
     try {
-      const r = await verify(v.seed, v.names);
-      const ok = r.hash === v.commit_hash && v.results.every((x) => r.months[x.card - 1] === x.month);
-      box.innerHTML = ok
-        ? '<span class="ok">✓ Disemak dalam telefon anda: keputusan sepadan dengan kod pengesahan. Tiada perubahan selepas dikunci.</span>'
-        : '<span class="bad">Keputusan tidak sepadan dengan kod pengesahan. Hubungi admin.</span>';
-    } catch {
-      box.innerHTML = '<span class="muted">Pelayar ini tidak dapat menyemak secara automatik. Guna halaman Semak keputusan.</span>';
+      v = await api.pick(token, selected);
+      justOpened = true;
+      selected = null;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      draw();
+    } catch (ex) {
+      toast(ex.message, 'warn');
+      selected = null;
+      v = await api.participantView(token).catch(() => v);
+      draw();
+    } finally {
+      busy = false;
     }
   }
 
@@ -153,5 +144,5 @@ export function renderParticipant(app, token) {
     }
   });
   load();
-  return stop;
+  return () => { stop(); setActionBar(''); };
 }

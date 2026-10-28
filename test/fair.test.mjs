@@ -39,3 +39,13 @@ test('taburan sekata (setiap bulan berpeluang sama pada setiap kad)', async () =
 test('kod benih tidak sah ditolak', async () => {
   await assert.rejects(() => verify('xyz', ['A', 'B']), /64 aksara/);
 });
+
+test('Kod Kunci: format tetap dan stabil', async () => {
+  const { shortCode } = await import('../src/fair.js');
+  const h = '0f33bffa721ccaae32652de86a583c2cda91068163c2180715d560ca6cd8384b';
+  const code = shortCode(h);
+  assert.match(code, /^EMAS-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/);
+  assert.equal(code, shortCode(h.toUpperCase()));
+  assert.notEqual(code, shortCode('1' + h.slice(1)));
+  assert.equal(code, 'EMAS-1WSV-ZYKJ');
+});

@@ -34,4 +34,5 @@ export const api = {
   adminPick: (token, idx) => rpc('kutu_admin_pick', { p_admin_token: token, p_idx: idx }),
   participantView: (token) => rpc('kutu_participant_view', { p_token: token }),
   pick: (token, card) => rpc('kutu_pick', { p_token: token, p_card: card }),
+  resultsView: (publicId) => rpc('kutu_results_view', { p_public_id: publicId }),
 };

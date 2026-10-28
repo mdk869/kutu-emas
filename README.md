@@ -4,18 +4,20 @@ Cabutan giliran kutu emas yang adil dan boleh disemak. Admin kunci senarai, seti
 
 ## Aliran
 
-1. **Admin** masukkan nama peserta → server kocok kad dan jana **kod pengesahan**.
-2. Admin umumkan kod pengesahan dalam group, kemudian hantar pautan peribadi (`#p=…`) kepada setiap peserta.
-3. **Peserta** pilih satu kad tertutup (siapa cepat dia dapat) dan nampak bulan sendiri.
-4. Peserta yang lambat: admin tekan **Cabut bagi pihaknya**, dan server pilih kad baki secara rawak.
-5. Bila semua selesai, keputusan penuh + **kod benih** dibuka. Telefon peserta menyemak secara automatik bahawa keputusan sepadan dengan kod pengesahan.
+1. **Admin** masukkan nama peserta → server kocok kad dan jana **Kod Kunci** (cth. `EMAS-K7M2-Q9XT`).
+2. Admin umumkan Kod Kunci dalam group, kemudian tekan **Hantar** untuk menghantar pautan peribadi (`#p=…`) kepada setiap peserta melalui WhatsApp.
+3. **Peserta** pilih satu kad tertutup (siapa cepat dia dapat) dan terus nampak bulan sendiri.
+4. Peserta yang lambat: admin tekan **⋯ → Cabut bagi pihaknya**, dan server pilih kad baki secara rawak.
+5. Bila semua selesai, admin kongsi **pautan keputusan** (`#k=…`) dalam group. Setiap halaman keputusan menyemak secara automatik dan memaparkan lencana **✓ Disahkan adil**.
+
+Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran untuk semakan lanjutan" dan halaman `#semak`.
 
 ## Keadilan
 
 | Jaminan | Bagaimana |
 |---|---|
 | Rawak sebenar | `gen_random_bytes` (CSPRNG) di Postgres, boleh dicampur nombor bertuah peserta |
-| Tidak boleh diubah | Kod pengesahan = SHA-256(benih + senarai nama), diumumkan sebelum cabutan |
+| Tidak boleh diubah | Kod pengesahan = SHA-256(benih + senarai nama). Kod Kunci = 40 bit pertamanya (Crockford base32) untuk dibaca manusia; semakan automatik guna hash penuh |
 | Tiada siapa boleh intai | Isi kad dalam jadual RLS tanpa polisi. Admin pun hanya nampak kad yang sudah dibuka |
 | Tiada kad berganda | Kunci baris sesi (`FOR UPDATE`) + indeks unik `(session_id, picked_card)` |
 | Boleh disemak | `src/fair.js` mengira semula algoritma yang sama dengan `kutu__perm` di SQL |
@@ -26,7 +28,7 @@ Cabutan giliran kutu emas yang adil dan boleh disemak. Admin kunci senarai, seti
 supabase/migrations/   skema, RLS, fungsi RPC
 src/fair.js            algoritma kocokan + semakan (mesti sama dengan SQL)
 src/api.js             panggilan RPC ke Supabase (fetch, tiada SDK)
-src/views/             create, admin, participant, verify
+src/views/             create, admin, participant, results, verify
 test/fair.test.mjs     ujian: vektor sama dengan SQL, taburan sekata
 ```
 
