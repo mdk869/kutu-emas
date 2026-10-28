@@ -31,7 +31,8 @@ export { shortCode };
 export const siteUrl = () => location.origin + location.pathname;
 export const participantLink = (token) => `${siteUrl()}#p=${token}`;
 export const adminLink = (token) => `${siteUrl()}#a=${token}`;
-export const resultsLink = (publicId) => `${siteUrl()}#k=${publicId}`;
+export const groupLink = (publicId) => `${siteUrl()}#k=${publicId}`;
+export const resultsLink = groupLink;
 export const waHref = (text) => 'https://wa.me/?text=' + encodeURIComponent(text);
 
 export function calendarHref(groupName, start, month) {

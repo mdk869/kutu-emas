@@ -5,12 +5,13 @@ Cabutan giliran kutu emas yang adil dan boleh disemak. Admin kunci senarai, seti
 ## Aliran
 
 1. **Admin** masukkan nama peserta → server susun kad secara rawak dan jana **Kod Kunci** (cth. `EMAS-K7M2-Q9XT`).
-2. Admin umumkan Kod Kunci dalam group, kemudian tekan **Hantar** untuk menghantar pautan peribadi (`#p=…`) kepada setiap peserta melalui WhatsApp.
-3. **Peserta** pilih satu kad tertutup (siapa cepat dia dapat) dan terus nampak bulan sendiri.
-4. Peserta yang lambat: admin tekan **⋯ → Cabut bagi pihaknya**, dan server pilih kad baki secara rawak.
-5. Bila semua selesai, admin kongsi **pautan keputusan** (`#k=…`) dalam group. Setiap halaman keputusan menyemak secara automatik dan memaparkan lencana **✓ Disahkan adil**.
+2. Admin kongsi **satu pautan cabutan** (`#k=…`) dalam group WhatsApp. Tiada PM kepada sesiapa.
+3. **Peserta** buka pautan yang sama, tekan nama sendiri, sahkan ("Ya, saya Rosnah"), dan pilih satu kad.
+4. **Papan langsung:** setiap kad yang dibuka dipaparkan kepada semua serta-merta. Isi kad yang belum dibuka kekal tersembunyi, termasuk daripada admin.
+5. Peserta yang lambat: admin tekan **⋯ → Cabut bagi pihaknya**. Server pilih kad baki secara rawak, dan semua nampak ia dicabut oleh admin.
+6. Bila semua selesai, pautan yang sama memaparkan senarai giliran dengan lencana **✓ Disahkan adil**.
 
-Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran untuk semakan lanjutan" dan halaman `#semak`.
+Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran untuk semakan lanjutan" dan halaman `#semak`. Pautan peribadi (`#p=…`) masih berfungsi tetapi tidak lagi digunakan dalam aliran utama.
 
 ## Keadilan
 
@@ -28,7 +29,7 @@ Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran unt
 supabase/migrations/   skema, RLS, fungsi RPC
 src/fair.js            algoritma susunan rawak + semakan (mesti sama dengan SQL)
 src/api.js             panggilan RPC ke Supabase (fetch, tiada SDK)
-src/views/             create, admin, participant, results, verify
+src/views/             create, admin, group (pautan group), participant, verify
 test/fair.test.mjs     ujian: vektor sama dengan SQL, taburan sekata
 ```
 

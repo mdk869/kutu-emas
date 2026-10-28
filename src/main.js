@@ -3,7 +3,7 @@ import { ICON, setActionBar } from './ui.js';
 import { renderCreate } from './views/create.js';
 import { renderAdmin } from './views/admin.js';
 import { renderParticipant } from './views/participant.js';
-import { renderResults } from './views/results.js';
+import { renderGroup } from './views/group.js';
 import { renderVerify } from './views/verify.js';
 
 document.getElementById('logo').innerHTML = ICON.bar;
@@ -20,7 +20,7 @@ function route() {
   document.body.dataset.view = h.slice(0, 2) || 'home';
   if (h.startsWith('a=')) cleanup = renderAdmin(app, h.slice(2));
   else if (h.startsWith('p=')) cleanup = renderParticipant(app, h.slice(2));
-  else if (h.startsWith('k=')) cleanup = renderResults(app, h.slice(2));
+  else if (h.startsWith('k=')) cleanup = renderGroup(app, h.slice(2));
   else if (h.startsWith('semak')) cleanup = renderVerify(app);
   else cleanup = renderCreate(app);
 }
