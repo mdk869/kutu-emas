@@ -32,8 +32,12 @@ export const api = {
     rpc('kutu_create_session', { p_group: group, p_start: start, p_names: names, p_luck: luck || null }),
   adminView: (token) => rpc('kutu_admin_view', { p_admin_token: token }),
   adminPick: (token, idx) => rpc('kutu_admin_pick', { p_admin_token: token, p_idx: idx }),
+  adminUpdate: (token, { group = null, start = null, names = null }) =>
+    rpc('kutu_admin_update', { p_admin_token: token, p_group: group, p_start: start, p_names: names }),
+  adminDelete: (token) => rpc('kutu_admin_delete', { p_admin_token: token }),
   participantView: (token) => rpc('kutu_participant_view', { p_token: token }),
   pick: (token, card) => rpc('kutu_pick', { p_token: token, p_card: card }),
   groupView: (publicId) => rpc('kutu_group_view', { p_public_id: publicId }),
-  groupPick: (publicId, idx, card) => rpc('kutu_group_pick', { p_public_id: publicId, p_idx: idx, p_card: card }),
+  groupPick: (publicId, idx, card, commitHash) =>
+    rpc('kutu_group_pick', { p_public_id: publicId, p_idx: idx, p_card: card, p_commit_hash: commitHash || null }),
 };

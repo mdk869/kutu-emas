@@ -138,11 +138,14 @@ export function resultsText(v) {
   );
 }
 
+/** Masa kad dikunci (atau dikunci semula selepas admin kemas kini senarai). */
+export const lockedAt = (v) => v.relocked_at || v.created_at;
+
 /** Lencana "kad dikunci" sebelum selesai. */
 export function lockBadge(v) {
   return `<div class="trust">
     <span class="trust-ic">${ICON.lock}</span>
-    <span><b>Kad dah dikunci</b> pada ${esc(fmtDate(v.created_at))}. Tiada siapa boleh tengok atau tukar isi kad, termasuk admin.
+    <span><b>Kad dah dikunci</b> pada ${esc(fmtDate(lockedAt(v)))}. Tiada siapa boleh tengok atau tukar isi kad, termasuk admin.${v.relocked_at ? ' <span class="relock">Senarai ahli dikemas kini oleh admin sebelum cabutan bermula, jadi kad disusun semula dan Kod Kunci ditukar.</span>' : ''}
     <span class="code-line">Kod Kunci: <b class="code">${shortCode(v.commit_hash)}</b></span></span>
   </div>`;
 }
@@ -158,7 +161,7 @@ export async function runFairCheck(root, v) {
     const ok = r.hash === v.commit_hash && v.results.every((x) => r.months[x.card - 1] === x.month);
     box.className = 'trust ' + (ok ? 'ok' : 'bad');
     box.innerHTML = ok
-      ? `<span class="trust-ic">${ICON.check}</span><span><b>Adil &amp; tidak diubah.</b> Keputusan ini sama macam masa kad dikunci (${esc(fmtDate(v.created_at))}). Kod Kunci <b class="code">${shortCode(v.commit_hash)}</b> sepadan.</span>`
+      ? `<span class="trust-ic">${ICON.check}</span><span><b>Adil &amp; tidak diubah.</b> Keputusan ini sama macam masa kad dikunci (${esc(fmtDate(lockedAt(v)))}). Kod Kunci <b class="code">${shortCode(v.commit_hash)}</b> sepadan.</span>`
       : `<span class="trust-ic">!</span><span><b>Keputusan tak sama dengan Kod Kunci.</b> Sila tanya admin.</span>`;
   } catch {
     box.className = 'trust';

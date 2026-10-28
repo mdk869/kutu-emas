@@ -341,3 +341,18 @@ details.tech p { margin: 0 0 4px; font-size: 13px; color: var(--muted); }
 @keyframes bobup { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @media (prefers-reduced-motion: reduce) { .sheet, .sheet-backdrop, .sheet-pointer { animation: none !important; } }
 .offline { position: fixed; top: 0; left: 0; right: 0; z-index: 70; text-align: center; font-size: 14px; font-weight: 600; color: var(--velvet); background: var(--warn); padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 8px; }
+
+/* Senarai kutu dengan menu */
+.sess-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sess { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 8px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(0, 0, 0, 0.15); }
+.sess-main { display: flex; flex-direction: column; gap: 3px; text-decoration: none; color: var(--ink); min-width: 0; }
+.sess-main b { overflow-wrap: anywhere; font-size: 16px; }
+.sess-sub { font-size: 13px; color: var(--muted); }
+a.menu-item { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
+.relock { display: block; margin-top: 6px; color: var(--warn); }
+.warnbox { border: 1px solid rgba(240, 164, 122, 0.4); border-radius: 12px; padding: 12px; background: rgba(240, 164, 122, 0.08); color: var(--ink); }
+.warnbox .trust-ic { background: var(--warn); color: var(--velvet); }
+.panel.danger { border-color: rgba(240, 164, 122, 0.35); }
+.danger-btn { border-color: var(--warn); color: var(--warn); }
+textarea:disabled, input:disabled { opacity: 0.55; }
+.btn.gold[data-armed] { background: var(--warn); border-color: var(--warn); color: var(--velvet); box-shadow: none; }
