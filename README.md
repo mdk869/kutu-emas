@@ -13,6 +13,18 @@ Cabutan giliran kutu emas yang adil dan boleh disemak. Admin kunci senarai, seti
 
 Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran untuk semakan lanjutan" dan halaman `#semak`. Pautan peribadi (`#p=…`) masih berfungsi tetapi tidak lagi digunakan dalam aliran utama.
 
+## Rekod admin
+
+- Tiada log masuk. Admin buka papan admin melalui **pautan admin** (`#a=…`).
+- **Cabutan saya** (`/`) menyenaraikan cabutan yang dicipta atau dibuka di peranti ini (disimpan dalam pelayar).
+- **Tambah cabutan sedia ada**: tampal pautan admin untuk memasukkan cabutan dari peranti lain, contohnya selepas memasang aplikasi di iPhone (storan aplikasi berasingan daripada Safari).
+
+## Aplikasi (PWA) untuk admin
+
+- `public/manifest.webmanifest`, ikon PNG (`public/icons/`, `public/apple-touch-icon.png`) dan `public/sw.js`.
+- Gesaan automatik Chrome disekat di semua halaman; butang **Pasang aplikasi** hanya dipaparkan di halaman admin. iPhone mendapat panduan *Add to Home Screen*. Halaman peserta (`#k=`, `#p=`) tidak pernah memaparkan gesaan.
+- Service worker menyimpan rangka aplikasi sahaja. Panggilan Supabase tidak disimpan, jadi data cabutan sentiasa terkini.
+
 ## Keadilan
 
 | Jaminan | Bagaimana |
@@ -29,7 +41,8 @@ Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran unt
 supabase/migrations/   skema, RLS, fungsi RPC
 src/fair.js            algoritma susunan rawak + semakan (mesti sama dengan SQL)
 src/api.js             panggilan RPC ke Supabase (fetch, tiada SDK)
-src/views/             create, admin, group (pautan group), participant, verify
+src/pwa.js             gesaan pasang (admin sahaja), service worker, jalur luar talian
+src/views/             home, create, admin, group (pautan group), participant, verify
 test/fair.test.mjs     ujian: vektor sama dengan SQL, taburan sekata
 ```
 

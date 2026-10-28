@@ -3,36 +3,42 @@ import {
   esc, monthLabel, fmtDate, groupLink, adminLink, waHref, copy, toast, ICON,
   armButton, resultsTable, resultsText, poll, confetti, shortCode, store, fairBox, runFairCheck, techDetails,
 } from '../ui.js';
+import { installCard } from '../pwa.js';
+import { rememberSession } from './home.js';
 
+/** Papan admin, dibuka melalui pautan admin (#a=<token>). */
 export function renderAdmin(app, token) {
   let v = null;
   let wasDone = null;
   let openMenu = null;
-  const annKey = `kutu-emas-umum-${token.slice(0, 8)}`;
-  app.innerHTML = `<div class="panel"><p class="muted">Memuatkan…</p></div>`;
+  const fetchView = () => api.adminView(token);
+  const doPick = (idx) => api.adminPick(token, idx);
+  const annKey = () => `kutu-emas-umum-${v.session_id}`;
+  app.innerHTML = `<div class="panel"><p class="muted">Sedang buka…</p></div>`;
 
   async function load() {
     try {
-      v = await api.adminView(token);
+      v = await fetchView();
+      // Pastikan cabutan ini ada dalam "Cabutan saya" pada peranti ini.
+      rememberSession({ token, group: v.group_name, n: v.n, at: v.created_at });
       draw();
     } catch (e) {
-      app.innerHTML = `<section class="panel"><h1>Cabutan tidak dijumpai</h1><p class="err">${esc(e.message)}</p><a class="btn" href="#">Buat cabutan baru</a></section>`;
-      stop();
+      app.innerHTML = `<section class="panel"><h1>Kutu tidak dijumpai</h1><p class="lead">${esc(e.message)}</p><a class="btn" href="#">Ke senarai kutu</a></section>`;
     }
   }
 
   const announceText = () =>
-    `*${v.group_name}*\nCabutan giliran kutu emas sudah dibuka 🎉\n\n1. Tekan pautan di bawah\n2. Pilih nama anda\n3. Pilih satu kad emas\n\nSetiap cabutan dipaparkan kepada semua orang secara langsung.\n\n👉 ${groupLink(v.public_id)}\n\n🔒 Kod Kunci: *${shortCode(v.commit_hash)}*\n(Pastikan kod ini sama dengan kod di skrin anda.)`;
+    `*${v.group_name}*\nCabutan giliran kutu emas dah dibuka 🎉\n\n1. Tekan link di bawah\n2. Pilih nama anda\n3. Pilih satu kad emas\n\nSemua orang boleh tengok setiap cabutan secara live.\n\n👉 ${groupLink(v.public_id)}\n\n🔒 Kod Kunci: *${shortCode(v.commit_hash)}*\n(Pastikan kod ini sama dengan kod di skrin anda.)`;
 
   function stepsHTML(done, picked) {
-    const announced = store.get(annKey, false);
+    const announced = store.get(annKey(), false);
     const step = (n, state, title, body) => `<li class="step ${state}"><span class="sn">${state === 'done' ? ICON.check : n}</span><div><b class="st">${title}</b>${body}</div></li>`;
     return `<ol class="steps">
-      ${step(1, announced || picked > 0 ? 'done' : 'now', 'Kongsi pautan cabutan dalam group', announced || picked > 0
-        ? `<p><button class="linkish" id="copyGroup" type="button">Salin pautan cabutan</button></p>`
-        : `<p>Satu pautan untuk semua peserta. Tiada perlu hantar secara peribadi.</p><div class="row-btns"><a class="btn wa small" id="announce" href="${waHref(announceText())}" target="_blank" rel="noopener">${ICON.wa} Kongsi ke group</a><button class="btn small" id="copyGroup" type="button">Salin pautan</button></div>`)}
-      ${step(2, done ? 'done' : announced || picked > 0 ? 'now' : 'todo', 'Peserta cabut sendiri', done ? '' : `<p>${picked}/${v.n} sudah cabut. Semua orang nampak setiap cabutan di <a href="#k=${v.public_id}">papan langsung</a>.</p>`)}
-      ${step(3, done ? 'now' : 'todo', 'Kongsi keputusan', done ? '<p>Semua sudah cabut. Kongsi keputusan dalam group.</p>' : '<p>Boleh dibuat selepas semua selesai.</p>')}
+      ${step(1, announced || picked > 0 ? 'done' : 'now', 'Hantar link cabutan dalam group', announced || picked > 0
+        ? `<p><button class="linkish" id="copyGroup" type="button">Salin link cabutan</button></p>`
+        : `<p>Satu link untuk semua ahli. Tak perlu hantar satu-satu.</p><div class="row-btns"><a class="btn wa small" id="announce" href="${waHref(announceText())}" target="_blank" rel="noopener">${ICON.wa} Hantar ke group</a><button class="btn small" id="copyGroup" type="button">Salin link</button></div>`)}
+      ${step(2, done ? 'done' : announced || picked > 0 ? 'now' : 'todo', 'Ahli cabut sendiri', done ? '' : `<p>${picked}/${v.n} dah cabut. Semua orang boleh tengok di <a href="#k=${v.public_id}">halaman live</a>.</p>`)}
+      ${step(3, done ? 'now' : 'todo', 'Kongsi keputusan', done ? '<p>Semua dah cabut. Kongsi keputusan dalam group.</p>' : '<p>Boleh buat bila semua dah cabut.</p>')}
     </ol>`;
   }
 
@@ -42,7 +48,7 @@ export function renderAdmin(app, token) {
       <div class="pinfo">
         <span class="pname">${esc(p.name)}</span>
         <span class="pstat">${picked
-          ? `${ICON.check} Sudah cabut${p.by_admin ? ' (oleh admin)' : ''}`
+          ? `${ICON.check} Dah cabut${p.by_admin ? ' (oleh admin)' : ''}`
           : 'Belum cabut'}</span>
       </div>
       ${picked
@@ -51,8 +57,8 @@ export function renderAdmin(app, token) {
             <button class="btn icon" type="button" data-menu="${p.idx}" aria-label="Pilihan untuk ${esc(p.name)}" aria-expanded="${openMenu === p.idx}">${ICON.dots}</button>
           </div>
           <div class="pmenu" ${openMenu === p.idx ? '' : 'hidden'}>
-            <button class="menu-item warn" type="button" data-pick="${p.idx}">Cabut bagi pihaknya</button>
-            <p class="hint">Sistem pilih kad secara rawak untuk ${esc(p.name)}, dan semua peserta akan nampak ia dicabut oleh admin. Gunakan hanya jika dia lambat atau tiada telefon.</p>
+            <button class="menu-item warn" type="button" data-pick="${p.idx}">Cabutkan untuk dia</button>
+            <p class="hint">Sistem akan pilih kad secara rawak untuk ${esc(p.name)}, dan semua ahli akan nampak ia dicabut oleh admin. Guna kalau dia lambat atau tiada telefon.</p>
           </div>`}
     </li>`;
   }
@@ -64,70 +70,73 @@ export function renderAdmin(app, token) {
     wasDone = done;
 
     app.innerHTML = `
+    <a class="back-link" href="#">‹ Senarai kutu</a>
     <section class="panel hero-panel">
       <div class="row-between">
         <div class="min0">
           <div class="eyebrow">Admin</div>
           <h1>${esc(v.group_name)}</h1>
-          <p class="muted">${v.n} peserta · bermula ${esc(monthLabel(v.start_month, 1))}</p>
+          <p class="muted">${v.n} ahli · mula ${esc(monthLabel(v.start_month, 1))}</p>
         </div>
-        <span class="status ${done ? 'done' : 'open'}">${done ? 'Selesai' : 'Berjalan'}</span>
+        <span class="status ${done ? 'done' : 'open'}">${done ? 'Selesai' : 'Sedang berjalan'}</span>
       </div>
       <div class="progress-wrap">
         <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${v.n}" aria-valuenow="${picked}"><span style="width:${(picked / v.n) * 100}%"></span></div>
         <span class="progress">${picked}/${v.n}</span>
       </div>
       ${stepsHTML(done, picked)}
+      <div id="install"></div>
     </section>
 
     ${done ? `
     <section class="panel">
-      <h2>Senarai giliran</h2>
+      <h2>Giliran terima emas</h2>
       ${resultsTable(v.results, v.start_month)}
       ${fairBox()}
       <div class="stack-btns">
-        <a class="btn wa wide" href="${waHref(resultsText(v))}" target="_blank" rel="noopener">${ICON.wa} Kongsi keputusan ke group</a>
+        <a class="btn wa wide" href="${waHref(resultsText(v))}" target="_blank" rel="noopener">${ICON.wa} Hantar keputusan ke group</a>
         <button class="btn wide" id="copyRes" type="button">Salin teks keputusan</button>
       </div>
     </section>` : ''}
 
     <section class="panel">
-      <div class="row-between"><h2>Peserta</h2>${done ? '' : `<span class="count">${v.n - picked} belum cabut</span>`}</div>
+      <div class="row-between"><h2>Ahli</h2>${done ? '' : `<span class="count">${v.n - picked} belum cabut</span>`}</div>
       <ul class="plist">${v.participants.map(rowHTML).join('')}</ul>
     </section>
 
     ${done ? '' : `<section class="panel quiet">${lockBadgeAdmin()}</section>`}
 
     <section class="panel quiet">
-      <h2>Simpan pautan admin</h2>
-      <p class="hint">Pautan ini untuk anda sahaja, untuk kembali ke halaman ini. Jangan kongsi dalam group.</p>
-      <button class="btn small" id="copyAdmin" type="button">Salin pautan admin</button>
+      <h2>Link admin anda</h2>
+      <p class="hint">Simpan link ini kalau nak buka halaman ini di telefon lain. Jangan kongsi dalam group.</p>
+      <button class="btn small" id="copyAdmin" type="button">Salin link admin</button>
       ${done ? techDetails(v) : ''}
     </section>`;
 
+    installCard(app.querySelector('#install'));
     bind();
     if (done) runFairCheck(app, v);
   }
 
   function lockBadgeAdmin() {
-    return `<div class="trust"><span class="trust-ic">${ICON.lock}</span><span><b>Kad dikunci</b> pada ${esc(fmtDate(v.created_at))}. Anda sebagai admin pun tidak boleh lihat isi kad yang belum dibuka.<span class="code-line">Kod Kunci: <b class="code">${shortCode(v.commit_hash)}</b></span></span></div>`;
+    return `<div class="trust"><span class="trust-ic">${ICON.lock}</span><span><b>Kad dah dikunci</b> pada ${esc(fmtDate(v.created_at))}. Admin pun tak boleh tengok kad yang belum dibuka.<span class="code-line">Kod Kunci: <b class="code">${shortCode(v.commit_hash)}</b></span></span></div>`;
   }
 
   function bind() {
     const $ = (s) => app.querySelector(s);
-    $('#copyAdmin').onclick = () => copy(adminLink(token), 'Pautan admin disalin.');
+    $('#copyAdmin').onclick = () => copy(adminLink(token), 'Link admin disalin.');
     $('#copyRes')?.addEventListener('click', () => copy(resultsText(v), 'Teks keputusan disalin.'));
-    $('#announce')?.addEventListener('click', () => { store.set(annKey, true); setTimeout(draw, 300); });
+    $('#announce')?.addEventListener('click', () => { store.set(annKey(), true); setTimeout(draw, 300); });
     app.querySelectorAll('[data-menu]').forEach((b) => {
       b.onclick = () => { const i = +b.dataset.menu; openMenu = openMenu === i ? null : i; draw(); };
     });
-    $('#copyGroup')?.addEventListener('click', () => copy(groupLink(v.public_id), 'Pautan cabutan disalin.'));
+    $('#copyGroup')?.addEventListener('click', () => copy(groupLink(v.public_id), 'Link cabutan disalin.'));
     app.querySelectorAll('[data-pick]').forEach((b) => {
       const idx = +b.dataset.pick;
-      armButton(b, 'Tekan sekali lagi untuk sahkan', async () => {
+      armButton(b, 'Tekan sekali lagi untuk teruskan', async () => {
         b.disabled = true;
         try {
-          v = await api.adminPick(token, idx);
+          v = await doPick(idx);
           openMenu = null;
           const p = v.participants.find((x) => x.idx === idx);
           toast(`${p.name} dapat Bulan ${p.month}.`);
@@ -143,7 +152,7 @@ export function renderAdmin(app, token) {
   // Lukis semula hanya bila data berubah dan tiada menu terbuka.
   const stop = poll(async () => {
     if (!v || v.status === 'done' || openMenu != null) return;
-    const nv = await api.adminView(token);
+    const nv = await fetchView();
     if (JSON.stringify(nv) !== JSON.stringify(v)) { v = nv; draw(); }
   });
   load();
