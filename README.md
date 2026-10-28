@@ -22,7 +22,11 @@ Butiran teknikal (kod pengesahan penuh, kod benih) disorok di bawah "Butiran unt
 ## Aplikasi (PWA) untuk admin
 
 - `public/manifest.webmanifest`, ikon PNG (`public/icons/`, `public/apple-touch-icon.png`) dan `public/sw.js`.
-- Gesaan automatik Chrome disekat di semua halaman; butang **Pasang aplikasi** hanya dipaparkan di halaman admin. iPhone mendapat panduan *Add to Home Screen*. Halaman peserta (`#k=`, `#p=`) tidak pernah memaparkan gesaan.
+- **Popup** "Letak Kutu Emas di skrin utama" keluar sendiri di halaman admin (sekali setiap lawatan; "Nanti" = senyap 3 hari). Butang kecil di halaman admin membuka semula popup bila-bila masa.
+  - Android (Chrome/Samsung/Edge): satu tekan **Install sekarang** terus buka dialog install pelayar. Manifest ada `screenshots` untuk dialog install yang lebih lengkap.
+  - iPhone/iPad: panduan bergambar (Kongsi → Tambah ke Skrin Utama → Add) dengan anak panah ke butang Safari.
+  - Dibuka dari WhatsApp: minta buka dalam Safari/Chrome dulu.
+- Halaman ahli (`#k=`, `#p=`) tidak pernah memaparkan popup.
 - Service worker menyimpan rangka aplikasi sahaja. Panggilan Supabase tidak disimpan, jadi data cabutan sentiasa terkini.
 
 ## Keadilan
